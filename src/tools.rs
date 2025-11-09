@@ -98,7 +98,7 @@ pub fn get_available_tools() -> Vec<Tool> {
             tool_type: "function".to_string(),
             function: ToolFunction {
                 name: "file_write".to_string(),
-                description: "Write content to a file. When content is too long (>100 lines), use multiple calls: first with 'overwrite', then with 'append' mode.".to_string(),
+                description: "Write content to a file. IMPORTANT: content must be <2000 chars per call. For large files: use mode='overwrite' for first ~50 lines, then mode='append' for each additional chunk.".to_string(),
                 parameters: json!({
                     "type": "object",
                     "properties": {
@@ -290,6 +290,21 @@ pub fn execute_tool(name: &str, arguments: &str, working_dir: &Path, require_app
         }
         "file_write" => {
             let args: FileWriteArgs = serde_json::from_str(arguments)?;
+            
+            // 预先检查内容长度，防止流式截断
+            const MAX_CONTENT_LENGTH: usize = 2500;
+            if args.content.len() > MAX_CONTENT_LENGTH {
+                let lines = args.content.lines().count();
+                return Ok(ToolResult::error(format!(
+                    "内容过长 ({} 字符, {} 行)，超过限制 {} 字符。\n\
+                    请使用分块策略：\n\
+                    1. 首次使用 mode='overwrite' 写入前 ~50 行\n\
+                    2. 然后使用 mode='append' 逐次追加剩余内容",
+                    args.content.len(),
+                    lines,
+                    MAX_CONTENT_LENGTH
+                )));
+            }
             
             let target_path = {
                 let p = Path::new(&args.path);
