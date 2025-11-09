@@ -168,7 +168,8 @@ async fn send_and_receive(
     messages: Vec<Message>,
     _session: &ChatSession,
 ) -> Result<(Message, Option<Vec<history::ToolCall>>, std::collections::HashMap<String, ui::ToolCallDisplay>)> {
-    let mut stream = client.chat_stream(messages).await?;
+    // 使用带重试的流式请求
+    let mut stream = client.chat_stream_with_retry(messages).await?;
     
     let mut content = String::new();
     let mut tool_accumulator = ToolCallAccumulator::new();
@@ -213,6 +214,10 @@ async fn send_and_receive(
                 }
                 // 累积工具调用数据（会实时显示）
                 tool_accumulator.add_chunk(id, name, arguments);
+            }
+            StreamChunk::FinishReason(reason) => {
+                // 记录完成原因
+                tool_accumulator.set_finish_reason(reason);
             }
             StreamChunk::Done => break,
         }

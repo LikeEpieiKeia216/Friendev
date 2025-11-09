@@ -93,6 +93,36 @@ impl ApiClient {
             config,
         }
     }
+    
+    /// 带重试的流式请求
+    pub async fn chat_stream_with_retry(
+        &self,
+        messages: Vec<Message>,
+    ) -> Result<Box<dyn Stream<Item = Result<StreamChunk>> + Unpin + Send>> {
+        let max_retries = self.config.max_retries;
+        let base_delay = self.config.retry_delay_ms;
+        
+        for attempt in 0..=max_retries {
+            if attempt > 0 {
+                let delay = base_delay * (1 << (attempt - 1)); // 指数退避
+                println!("\n\x1b[33m[!] 重试 {}/{}...正在等待 {}ms\x1b[0m", attempt, max_retries, delay);
+                tokio::time::sleep(tokio::time::Duration::from_millis(delay)).await;
+            }
+            
+            match self.chat_stream(messages.clone()).await {
+                Ok(stream) => return Ok(stream),
+                Err(e) => {
+                    if attempt == max_retries {
+                        eprintln!("\n\x1b[31m[X] 所有重试均失败\x1b[0m");
+                        return Err(e);
+                    }
+                    eprintln!("\n\x1b[33m[!] 请求失败: {}\x1b[0m", e);
+                }
+            }
+        }
+        
+        Err(anyhow::anyhow!("所有重试均失败"))
+    }
 
     pub async fn chat_stream(
         &self,
@@ -176,6 +206,7 @@ pub enum StreamChunk {
         name: String,
         arguments: String,
     },
+    FinishReason(String),  // 流完成原因：stop, length, tool_calls 等
     Done,
 }
 
@@ -191,10 +222,10 @@ fn parse_sse_chunk(text: &str) -> Option<Result<StreamChunk>> {
             match serde_json::from_str::<ChatResponse>(data) {
                 Ok(response) => {
                     if let Some(choice) = response.choices.first() {
-                        // 检查 finish_reason
+                        // 检查 finish_reason，单独发出事件
                         if let Some(reason) = &choice.finish_reason {
                             if reason == "stop" || reason == "length" || reason == "tool_calls" {
-                                return Some(Ok(StreamChunk::Done));
+                                return Some(Ok(StreamChunk::FinishReason(reason.clone())));
                             }
                         }
                         
@@ -252,6 +283,9 @@ pub struct ToolCallAccumulator {
     calls: std::collections::HashMap<String, (String, String)>,
     last_id: Option<String>,  // 记录上一个有效的 ID
     displays: std::collections::HashMap<String, ToolCallDisplay>,  // UI 显示组件
+    has_tool_calls: bool,  // 是否检测到工具调用
+    has_finish_reason: bool,  // 是否收到 finish_reason
+    finish_reason: Option<String>,  // 完成原因
 }
 
 impl ToolCallAccumulator {
@@ -260,10 +294,33 @@ impl ToolCallAccumulator {
             calls: std::collections::HashMap::new(),
             last_id: None,
             displays: std::collections::HashMap::new(),
+            has_tool_calls: false,
+            has_finish_reason: false,
+            finish_reason: None,
         }
+    }
+    
+    /// 记录 finish_reason
+    pub fn set_finish_reason(&mut self, reason: String) {
+        self.has_finish_reason = true;
+        self.finish_reason = Some(reason);
+    }
+    
+    /// 检查是否有工具调用
+    pub fn has_tool_calls(&self) -> bool {
+        self.has_tool_calls
+    }
+    
+    /// 检查是否有 finish_reason
+    pub fn has_finish_reason(&self) -> bool {
+        self.has_finish_reason
     }
 
     pub fn add_chunk(&mut self, id: String, name: String, arguments: String) {
+        // 标记有工具调用
+        if !id.is_empty() || !name.is_empty() || !arguments.is_empty() {
+            self.has_tool_calls = true;
+        }
         // 如果 id 为空，使用上一个有效的 ID
         let key = if id.is_empty() {
             self.last_id.clone().unwrap_or_else(|| "temp".to_string())
@@ -304,6 +361,9 @@ impl ToolCallAccumulator {
     }
 
     pub fn into_tool_calls(self) -> Vec<ToolCall> {
+        let has_tool_calls = self.has_tool_calls;
+        let has_finish_reason = self.has_finish_reason;
+        
         self.calls
             .into_iter()
             .filter_map(|(id, (name, arguments))| {
@@ -313,17 +373,34 @@ impl ToolCallAccumulator {
                     return None;
                 }
                 
-                // 验证 JSON 是否完整且有效
-                if !is_json_semantically_complete(&name, &arguments) {
-                    let preview: String = arguments.chars().take(50).collect();
-                    eprintln!("\x1b[33m[!] Warning:\x1b[0m Incomplete JSON for tool '{}': {}", name, preview);
-                    return None;
+                // 放宽验证：如果有 tool_call 标记，尝试修复而非直接拒绝
+                let is_structurally_valid = is_json_structurally_complete(&arguments);
+                
+                if !has_tool_calls || (!is_structurally_valid && !has_finish_reason) {
+                    // 严格模式：没有 tool_call 标记或结构严重损坏
+                    if !is_json_semantically_complete(&name, &arguments) {
+                        let preview: String = arguments.chars().take(50).collect();
+                        eprintln!("\x1b[33m[!] Warning:\x1b[0m Incomplete JSON for tool '{}': {}", name, preview);
+                        return None;
+                    }
                 }
                 
                 // 再次验证是否可以解析
                 let fixed_arguments = if serde_json::from_str::<serde_json::Value>(&arguments).is_err() {
                     // 尝试修复常见问题
                     let mut fixed = arguments.clone();
+                    
+                    // 特殊处理 file_write 的 content 截断
+                    if name == "file_write" && has_tool_calls {
+                        // 检测 content 字段是否未闭合
+                        if let Some(content_start) = fixed.rfind(r#""content""#) {
+                            let after_content = &fixed[content_start..];
+                            // 如果 content 后面没有闭合引号，补上
+                            if after_content.matches('"').count() % 2 != 0 {
+                                fixed.push_str(r#""#);
+                            }
+                        }
+                    }
                     
                     // 1. 添加缺失的右花括号
                     let open_braces = fixed.matches('{').count();
@@ -334,14 +411,14 @@ impl ToolCallAccumulator {
                         }
                     }
                     
-                    // 2. 添加缺失的引号
+                    // 2. 添加缺失的引号（全局检查）
                     if fixed.matches('"').count() % 2 != 0 {
                         fixed.push('"');
                     }
                     
                     // 3. 验证修复后的 JSON
                     if serde_json::from_str::<serde_json::Value>(&fixed).is_ok() {
-                        eprintln!("\x1b[32m[✓] Info:\x1b[0m Auto-fixed JSON for tool '{}'", name);
+                        eprintln!("\x1b[32m[✓] Info:\x1b[0m Auto-fixed JSON for tool '{}' (has_tool_calls={})", name, has_tool_calls);
                         fixed
                     } else {
                         eprintln!("\x1b[31m[✗] Error:\x1b[0m Failed to fix JSON for tool '{}'", name);

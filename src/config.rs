@@ -12,6 +12,18 @@ pub struct Config {
     pub ui_language: String,
     #[serde(default = "default_ai_language")]
     pub ai_language: String,
+    #[serde(default = "default_max_retries")]
+    pub max_retries: u32,
+    #[serde(default = "default_retry_delay_ms")]
+    pub retry_delay_ms: u64,
+}
+
+fn default_max_retries() -> u32 {
+    3
+}
+
+fn default_retry_delay_ms() -> u64 {
+    300
 }
 
 fn default_ui_language() -> String {
@@ -75,6 +87,8 @@ impl Config {
             current_model,
             ui_language: "en".to_string(),
             ai_language: "en".to_string(),
+            max_retries: 3,
+            retry_delay_ms: 300,
         };
 
         config.save()?;
