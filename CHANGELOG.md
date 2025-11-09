@@ -12,3 +12,4 @@ all friendev update changelog on here.
 ### edit
 
 - System Prompt to English
+- Optimize JSON validation and string processing
