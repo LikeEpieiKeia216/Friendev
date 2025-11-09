@@ -90,15 +90,15 @@ jobs:
         with:
           path: ./artifacts
 
-      - name: List artifacts
-        run: ls -R ./artifacts
+      - name: Debug: List downloaded files
+        run: find ./artifacts -type f
 
       - name: Upload binaries to release
         run: |
-          cd ./artifacts
-          for dir in */; do
-            asset_name=${dir%/}
-            gh release upload ${{ github.event.release.tag_name }} "$dir*" --clobber
+          find ./artifacts -type f | while read file; do
+            basename=$(basename "$file")
+            echo "Uploading $basename ..."
+            gh release upload ${{ github.event.release.tag_name }} "$file" --clobber
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
