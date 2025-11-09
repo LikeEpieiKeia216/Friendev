@@ -1,4 +1,4 @@
-name: 构建Friendev
+name: Make Friendev
 
 on:
   push:
@@ -12,8 +12,8 @@ on:
       - 'library_*/**'
       - '**.md'
   release:
-    types: [created]  # 发布版本时触发
-  workflow_dispatch:  # 允许手动触发
+    types: [created]  # Triggered when a release is created
+  workflow_dispatch:  # Allows manual triggering
 
 # 添加权限设置
 permissions:
