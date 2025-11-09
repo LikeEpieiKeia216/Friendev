@@ -16,6 +16,8 @@ struct ChatRequest {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     tools: Vec<tools::Tool>,
     stream: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    max_tokens: Option<u32>,  // 最大输出 token 数，None 表示不限制
 }
 
 #[derive(Debug, Deserialize)]
@@ -96,6 +98,7 @@ impl ApiClient {
             messages,
             tools: tools::get_available_tools(),
             stream: true,
+            max_tokens: None,  // 不限制输出 token，使用模型默认值
         };
 
         let response = self
