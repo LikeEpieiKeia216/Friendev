@@ -53,3 +53,56 @@ git push
 
 如果你还需要签名、校验和生成或更复杂的发布策略，也可以继续扩展这个工作流。需要的话我可以帮你完善！
 >>
+
+>> build (windows-latest, x86_64-pc-windows-msvc, friendev.exe, friendev-windows-amd64.exe)This request has been automat
+ically failed because it uses a deprecated version of `actions/upload-artifact: v3`. Learn more: https://github.blog/cha
+ngelog/2024-04-16-deprecation-notice-v3-of-the-artifact-actions/build (macos-latest, aarch64-apple-darwin, friendev, fri
+endev-macos-arm64)The strategy configuration was canceled because "build.windows-latest_x86_64-pc-" failedbuild (macos-l
+atest, aarch64-apple-darwin, friendev, friendev-macos-arm64)This request has been automatically failed because it uses a
+ deprecated version of `actions/upload-artifact: v3`. Learn more: https://github.blog/changelog/2024-04-16-deprecation-n
+otice-v3-of-the-artifact-actions/build (ubuntu-latest, x86_64-unknown-linux-gnu, friendev, friendev-linux-amd64)The stra
+tegy configuration was canceled because "build.windows-latest_x86_64-pc-" failedbuild (ubuntu-latest, x86_64-unknown-lin
+ux-gnu, friendev, friendev-linux-amd64)This request has been automatically failed because it uses a deprecated version o
+f `actions/upload-artifact: v3`. Learn more: https://github.blog/changelog/2024-04-16-deprecation-notice-v3-of-the-artif
+act-actions/build (macos-latest, x86_64-apple-darwin, friendev, friendev-macos-amd64)The strategy configuration was canc
+eled because "build.windows-latest_x86_64-pc-" failedbuild (macos-latest, x86_64-apple-darwin, friendev, friendev-macos-
+amd64)This request has been automatically failed because it uses a deprecated version of `actions/upload-artifact: v3`.
+Learn more: https://github.blog/changelog/2024-04-16-deprecation-notice-v3-of-the-artifact-actions/
+
+[AI]
+  ⠋ Using file_read (.github/workflows/ci.yml)
+  • Used file_read
+    读取 99 行, 2673 字节
+
+[AI]
+  ⠋ Using file_write (.github/workflows/ci.yml)
+  ──── Approval Required ──────────────────
+    WriteFile wants to modify:
+      ci.yml
+
+    Content preview:
+      name: CI/CD Pipeline
+
+      on:
+        push:
+          branches:
+      ... (94 more lines)
+
+    [Y]es / [N]o / [A]lways
+  ─────────────────────────────────────────
+  Your choice: y
+
+  • Used file_write
+    写入 2673 字节
+
+[AI] 已将 `.github/workflows/ci.yml` 中的 `actions/upload-artifact` 和 `actions/download-artifact` 版本从 `v3` 升级为 `v4`，以解决 GitHub Actions 的弃用警告。
+
+你可以再次提交并推送更新后的工作流文件：
+```bash
+git add .github/workflows/ci.yml
+git commit -m "Upgrade artifact actions to v4"
+git push
+```
+
+现在工作流应该可以正常运行，并在每次 Push、PR、Release 或手动触发时构建多平台二进制文件。如有其他需求（如添加校验和、签名、Docker 镜像等），也可以继续扩展！
+>>
