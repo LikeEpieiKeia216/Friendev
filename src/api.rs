@@ -155,13 +155,13 @@ impl ApiClient {
 
         let stream = response.bytes_stream();
         
-        let mapped_stream = stream.filter_map(|chunk| async move {
-            match chunk {
-                Ok(bytes) => {
-                    let text = String::from_utf8_lossy(&bytes);
-                    parse_sse_chunk(&text)
-                }
-                Err(e) => Some(Err(anyhow::anyhow!("流错误: {}", e))),
+        // 使用 SSE 行缓冲器来处理被分割的 JSON
+        let sse_stream = SseLineStream::new(stream);
+        
+        let mapped_stream = sse_stream.filter_map(|line_result| async move {
+            match line_result {
+                Ok(line) => parse_sse_line(&line),
+                Err(e) => Some(Err(e)),
             }
         });
         
@@ -210,68 +210,70 @@ pub enum StreamChunk {
     Done,
 }
 
-fn parse_sse_chunk(text: &str) -> Option<Result<StreamChunk>> {
-    for line in text.lines() {
-        if line.starts_with("data: ") {
-            let data = &line[6..];
-            
-            if data.trim() == "[DONE]" {
-                return Some(Ok(StreamChunk::Done));
-            }
+/// 解析 SSE 数据 流有效输出单条 data: 行之后的 JSON
+fn parse_sse_message(data: &str) -> Option<Result<StreamChunk>> {
+    let data = data.trim();
+    
+    if data.is_empty() {
+        return None;
+    }
+    
+    if data == "[DONE]" {
+        return Some(Ok(StreamChunk::Done));
+    }
 
-            match serde_json::from_str::<ChatResponse>(data) {
-                Ok(response) => {
-                    if let Some(choice) = response.choices.first() {
-                        // 检查 finish_reason，单独发出事件
-                        if let Some(reason) = &choice.finish_reason {
-                            if reason == "stop" || reason == "length" || reason == "tool_calls" {
-                                return Some(Ok(StreamChunk::FinishReason(reason.clone())));
-                            }
-                        }
-                        
-                        if let Some(delta) = &choice.delta {
-                            // 处理 tool_calls（最高优先级，因为最重要）
-                            if let Some(tool_calls) = &delta.tool_calls {
-                                for tc in tool_calls {
-                                    let id = tc.id.as_deref().unwrap_or("");
-                                    let name = tc.function.as_ref()
-                                        .and_then(|f| f.name.as_deref())
-                                        .unwrap_or("");
-                                    let args = tc.function.as_ref()
-                                        .and_then(|f| f.arguments.as_deref())
-                                        .unwrap_or("");
-                                    
-                                    // 只要有任何内容就返回
-                                    if !id.is_empty() || !name.is_empty() || !args.is_empty() {
-                                        return Some(Ok(StreamChunk::ToolCall {
-                                            id: id.to_string(),
-                                            name: name.to_string(),
-                                            arguments: args.to_string(),
-                                        }));
-                                    }
-                                }
-                            }
+    match serde_json::from_str::<ChatResponse>(data) {
+        Ok(response) => {
+            if let Some(choice) = response.choices.first() {
+                // 检查 finish_reason，单独发出事件
+                if let Some(reason) = &choice.finish_reason {
+                    if reason == "stop" || reason == "length" || reason == "tool_calls" {
+                        return Some(Ok(StreamChunk::FinishReason(reason.clone())));
+                    }
+                }
+                
+                if let Some(delta) = &choice.delta {
+                    // 处理 tool_calls（最高优先级，因为最重要）
+                    if let Some(tool_calls) = &delta.tool_calls {
+                        for tc in tool_calls {
+                            let id = tc.id.as_deref().unwrap_or("");
+                            let name = tc.function.as_ref()
+                                .and_then(|f| f.name.as_deref())
+                                .unwrap_or("");
+                            let args = tc.function.as_ref()
+                                .and_then(|f| f.arguments.as_deref())
+                                .unwrap_or("");
                             
-                            // 处理 content（实际回复）
-                            if let Some(content) = &delta.content {
-                                if !content.is_empty() {
-                                    return Some(Ok(StreamChunk::Content(content.clone())));
-                                }
-                            }
-                            
-                            // 处理 reasoning_content（思考过程）
-                            if let Some(reasoning) = &delta.reasoning_content {
-                                if !reasoning.is_empty() {
-                                    return Some(Ok(StreamChunk::Reasoning(reasoning.clone())));
-                                }
+                            // 只要有任何内容就返回
+                            if !id.is_empty() || !name.is_empty() || !args.is_empty() {
+                                return Some(Ok(StreamChunk::ToolCall {
+                                    id: id.to_string(),
+                                    name: name.to_string(),
+                                    arguments: args.to_string(),
+                                }));
                             }
                         }
                     }
-                }
-                Err(_e) => {
-                    // 静默忽略解析错误
+                    
+                    // 处理 content（实际回复）
+                    if let Some(content) = &delta.content {
+                        if !content.is_empty() {
+                            return Some(Ok(StreamChunk::Content(content.clone())));
+                        }
+                    }
+                    
+                    // 处理 reasoning_content（思考过程）
+                    if let Some(reasoning) = &delta.reasoning_content {
+                        if !reasoning.is_empty() {
+                            return Some(Ok(StreamChunk::Reasoning(reasoning.clone())));
+                        }
+                    }
                 }
             }
+        }
+        Err(_e) => {
+            // SseLineStream 库已经正确处理了流分割
+            // 这里的错误基本是JSON结构错误，可以安全忽略
         }
     }
     None
@@ -362,7 +364,6 @@ impl ToolCallAccumulator {
 
     pub fn into_tool_calls(self) -> Vec<ToolCall> {
         let has_tool_calls = self.has_tool_calls;
-        let has_finish_reason = self.has_finish_reason;
         
         self.calls
             .into_iter()
@@ -373,16 +374,11 @@ impl ToolCallAccumulator {
                     return None;
                 }
                 
-                // 放宽验证：如果有 tool_call 标记，尝试修复而非直接拒绝
-                let is_structurally_valid = is_json_structurally_complete(&arguments);
-                
-                if !has_tool_calls || (!is_structurally_valid && !has_finish_reason) {
-                    // 严格模式：没有 tool_call 标记或结构严重损坏
-                    if !is_json_semantically_complete(&name, &arguments) {
-                        let preview: String = arguments.chars().take(50).collect();
-                        eprintln!("\x1b[33m[!] Warning:\x1b[0m Incomplete JSON for tool '{}': {}", name, preview);
-                        return None;
-                    }
+                // 验证 JSON 是否有效
+                if !is_json_semantically_complete(&name, &arguments) {
+                    let preview: String = arguments.chars().take(50).collect();
+                    eprintln!("\x1b[33m[!] Warning:\x1b[0m Incomplete JSON for tool '{}': {}", name, preview);
+                    return None;
                 }
                 
                 // 再次验证是否可以解析
@@ -510,23 +506,11 @@ fn is_json_semantically_complete(tool_name: &str, arguments: &str) -> bool {
                 return false;
             }
             
-            // 必须有 content 参数（即使是空字符串也求是字符串类型）
-            // 注意：如果 content 値非常短（<10个字节）并且字符串未幅途形成（不求周期）
-            // 可能表示为不完整，握断为截断状态
-            let content_str = obj.get("content")
+            // 必须有 content 参数
+            obj.get("content")
                 .and_then(|v| v.as_str())
-                .unwrap_or("");
-            
-            // 如果 content 求需且非常短，可能被截断了
-            if content_str.len() < 10 && content_str.len() > 0 {
-                // 检查是否以引号结尾（正常 JSON 字符串的设计）
-                // 或以斜汢结尾（被截断的踸迹）
-                if !content_str.ends_with('"') && !content_str.ends_with('\\') {
-                    return false;  // 似乎被截断了
-                }
-            }
-            
-            true
+                .map(|_| true)
+                .unwrap_or(false)
         }
         "file_replace" => {
             // 必须有 path 和 edits 参数
@@ -574,4 +558,79 @@ fn is_json_structurally_complete(s: &str) -> bool {
     }
     
     braces == 0 && brackets == 0 && !in_string
+}
+
+// ==================== SSE 行缓冲器 ====================
+
+/// 处理 SSE 流的行缓冲器
+/// 正确处理被分割的 JSON 数据（一条 data: 行可能有多个字节块）
+struct SseLineStream<S> {
+    inner: S,
+    buffer: String,
+}
+
+impl<S> SseLineStream<S> {
+    fn new(stream: S) -> Self {
+        Self {
+            inner: stream,
+            buffer: String::new(),
+        }
+    }
+}
+
+impl<S> futures::Stream for SseLineStream<S>
+where
+S: futures::Stream<Item = Result<bytes::Bytes, reqwest::Error>> + Unpin,
+{
+    type Item = Result<String>;
+    
+    fn poll_next(mut self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<Option<Self::Item>> {
+        use std::pin::Pin;
+        use std::task::Poll;
+        
+        loop {
+            // 先于检查不需处理数据的特殊情况
+            if let Some(pos) = self.buffer.find('\n') {
+                let line = self.buffer.drain(0..=pos).collect::<String>();
+                let trimmed = line.trim_end_matches('\n').to_string();
+                if !trimmed.is_empty() || self.buffer.is_empty() {
+                    return Poll::Ready(Some(Ok(trimmed)));
+                }
+            }
+            
+            // 三次流获取下一个字节块
+            match Pin::new(&mut self.inner).poll_next(cx) {
+                Poll::Ready(Some(Ok(bytes))) => {
+                    let text = String::from_utf8_lossy(&bytes);
+                    self.buffer.push_str(&text);
+                }
+                Poll::Ready(Some(Err(e))) => {
+                    return Poll::Ready(Some(Err(anyhow::anyhow!("流错误: {}", e))));
+                }
+                Poll::Ready(None) => {
+                    // 流结束，发送最后一段缓冲数据
+                    if !self.buffer.is_empty() {
+                        let remaining = std::mem::take(&mut self.buffer);
+                        return Poll::Ready(Some(Ok(remaining)));
+                    }
+                    return Poll::Ready(None);
+                }
+                Poll::Pending => {
+                    return Poll::Pending;
+                }
+            }
+        }
+    }
+}
+
+/// 解析单条 SSE 行（平正完整的数据）
+fn parse_sse_line(line: &str) -> Option<Result<StreamChunk>> {
+    let trimmed = line.trim();
+    
+    if trimmed.is_empty() || !trimmed.starts_with("data: ") {
+        return None;
+    }
+    
+    let data = &trimmed[6..];
+    parse_sse_message(data)
 }
