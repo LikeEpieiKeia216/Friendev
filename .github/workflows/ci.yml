@@ -225,133 +225,9 @@ jobs:
         target: ${{ matrix.target }}
         override: true
 
-    - name: Install Cross-Compilation Dependencies (Windows)
-      if: matrix.os == 'windows-latest' && matrix.target != 'x86_64-pc-windows-msvc'
-      run: |
-        # Windows cross-compilation is usually handled automatically by the Rust toolchain
-        echo "Windows cross-compilation target: ${{ matrix.target }}"
-    - name: Install Cross-Compilation Dependencies (Linux)
+    - name: Install cross
       if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        case ${{ matrix.target }} in
-          i686-unknown-linux-gnu|i586-unknown-linux-gnu)
-            sudo apt-get install -y gcc-i686-linux-gnu g++-i686-linux-gnu
-            echo "CC_i686_unknown_linux_gnu=i686-linux-gnu-gcc" >> $GITHUB_ENV
-            echo "CXX_i686_unknown_linux_gnu=i686-linux-gnu-g++" >> $GITHUB_ENV
-            echo "CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_LINKER=i686-linux-gnu-gcc" >> $GITHUB_ENV
-            ;;
-          aarch64-unknown-linux-gnu|aarch64-unknown-linux-musl)
-            sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu musl-tools
-            echo "CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-            echo "CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++" >> $GITHUB_ENV
-            echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-            ;;
-          armv7-unknown-linux-gnueabihf|arm-unknown-linux-gnueabihf)
-            sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
-            echo "CC_arm_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
-            echo "CXX_arm_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++" >> $GITHUB_ENV
-            echo "CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
-            echo "CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
-            ;;
-          riscv64gc-unknown-linux-gnu)
-            sudo apt-get install -y gcc-riscv64-linux-gnu g++-riscv64-linux-gnu
-            echo "CC_riscv64gc_unknown_linux_gnu=riscv64-linux-gnu-gcc" >> $GITHUB_ENV
-            echo "CARGO_TARGET_RISCV64GC_UNKNOWN_LINUX_GNU_LINKER=riscv64-linux-gnu-gcc" >> $GITHUB_ENV
-            ;;
-          powerpc64le-unknown-linux-gnu)
-            sudo apt-get install -y gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu
-            echo "CC_powerpc64le_unknown_linux_gnu=powerpc64le-linux-gnu-gcc" >> $GITHUB_ENV
-            echo "CARGO_TARGET_POWERPC64LE_UNKNOWN_LINUX_GNU_LINKER=powerpc64le-linux-gnu-gcc" >> $GITHUB_ENV
-            ;;
-          s390x-unknown-linux-gnu)
-            sudo apt-get install -y gcc-s390x-linux-gnu g++-s390x-linux-gnu
-            echo "CC_s390x_unknown_linux_gnu=s390x-linux-gnu-gcc" >> $GITHUB_ENV
-            echo "CARGO_TARGET_S390X_UNKNOWN_LINUX_GNU_LINKER=s390x-linux-gnu-gcc" >> $GITHUB_ENV
-            ;;
-          x86_64-unknown-linux-musl)
-            sudo apt-get install -y musl-tools
-            ;;
-          *-linux-android)
-            # Handled by setup-ndk later
-            ;;
-          x86_64-unknown-freebsd|i686-unknown-freebsd)
-            sudo apt-get install -y clang lld
-            ;;
-          x86_64-unknown-netbsd)
-            sudo apt-get install -y clang lld
-            ;;
-          x86_64-unknown-openbsd)
-            sudo apt-get install -y clang lld
-            ;;
-          *)
-            echo "No extra dependencies needed for target ${{ matrix.target }}"
-            ;;
-        esac
-
-    - name: Verify Cross-Compilation Tools
-      if: matrix.os == 'ubuntu-latest' && matrix.target != 'x86_64-unknown-linux-gnu' && matrix.target != 'x86_64-unknown-linux-musl'
-      run: |
-        case ${{ matrix.target }} in
-          i686-unknown-linux-gnu|i586-unknown-linux-gnu)
-            which i686-linux-gnu-gcc || echo "警告: i686-linux-gnu-gcc 未找到"
-            ;;
-          aarch64-unknown-linux-gnu|aarch64-unknown-linux-musl)
-            which aarch64-linux-gnu-gcc || echo "警告: aarch64-linux-gnu-gcc 未找到"
-            ;;
-          armv7-unknown-linux-gnueabihf|arm-unknown-linux-gnueabihf)
-            which arm-linux-gnueabihf-gcc || echo "警告: arm-linux-gnueabihf-gcc 未找到"
-            ;;
-          riscv64gc-unknown-linux-gnu)
-            which riscv64-linux-gnu-gcc || echo "警告: riscv64-linux-gnu-gcc 未找到"
-            ;;
-          powerpc64le-unknown-linux-gnu)
-            which powerpc64le-linux-gnu-gcc || echo "警告: powerpc64le-linux-gnu-gcc 未找到"
-            ;;
-          s390x-unknown-linux-gnu)
-            which s390x-linux-gnu-gcc || echo "警告: s390x-linux-gnu-gcc 未找到"
-            ;;
-          x86_64-unknown-freebsd|i686-unknown-freebsd|x86_64-unknown-netbsd|x86_64-unknown-openbsd)
-            which clang || echo "警告: clang 未找到"
-            ;;
-        esac
-
-    - name: Android NDK
-      if: contains(matrix.target, 'android')
-      uses: nttld/setup-ndk@v1
-      with:
-        ndk-version: r25c
-        add-to-path: false
-
-    - name: Configure Android Environment Variables
-      if: contains(matrix.target, 'android')
-      run: |
-        case ${{ matrix.target }} in
-          aarch64-linux-android)
-            echo "CC_aarch64_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang" >> $GITHUB_ENV
-            echo "CXX_aarch64_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang++" >> $GITHUB_ENV
-            echo "AR_aarch64_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar" >> $GITHUB_ENV
-            echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang" >> $GITHUB_ENV
-            ;;
-          armv7-linux-androideabi)
-            echo "CC_armv7_linux_androideabi=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi21-clang" >> $GITHUB_ENV
-            echo "CXX_armv7_linux_androideabi=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi21-clang++" >> $GITHUB_ENV
-            echo "AR_armv7_linux_androideabi=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar" >> $GITHUB_ENV
-            echo "CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi21-clang" >> $GITHUB_ENV
-            ;;
-          x86_64-linux-android)
-            echo "CC_x86_64_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang" >> $GITHUB_ENV
-            echo "CXX_x86_64_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang++" >> $GITHUB_ENV
-            echo "AR_x86_64_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar" >> $GITHUB_ENV
-            echo "CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android21-clang" >> $GITHUB_ENV
-            ;;
-          i686-linux-android)
-            echo "CC_i686_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android21-clang" >> $GITHUB_ENV
-            echo "CXX_i686_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android21-clang++" >> $GITHUB_ENV
-            echo "AR_i686_linux_android=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar" >> $GITHUB_ENV
-            echo "CARGO_TARGET_I686_LINUX_ANDROID_LINKER=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android21-clang" >> $GITHUB_ENV
-            ;;
-        esac
+      run: cargo install cross --locked
 
     - name: Show Build Environment Info
       run: |
@@ -363,7 +239,25 @@ jobs:
         rustup target list --installed
       shell: bash
 
-    - name: Build
+    - name: Build (using cross for Linux/Android/BSD targets)
+      if: |
+        matrix.os == 'ubuntu-latest' && (
+          contains(matrix.target, 'linux') || 
+          contains(matrix.target, 'android') ||
+          contains(matrix.target, 'freebsd') ||
+          contains(matrix.target, 'netbsd') ||
+          contains(matrix.target, 'openbsd')
+        )
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --release --target ${{ matrix.target }}
+      env:
+        RUST_BACKTRACE: 1
+
+    - name: Build (native for Windows/macOS)
+      if: matrix.os != 'ubuntu-latest'
       uses: actions-rs/cargo@v1
       with:
         command: build
