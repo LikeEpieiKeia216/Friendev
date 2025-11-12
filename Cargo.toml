@@ -44,3 +44,8 @@ comfy-table = "7.1"                   # ASCII 表格
 # 工具组件
 # skim = "0.10"                      # 模糊查找器 (类 fzf) - Windows 不兼容
 termimad = "0.28"                     # Markdown 渲染
+scraper = "0.19"                      # HTML解析与选择器
+url = "2.5"                           # URL解析与操作
+regex = "1.10"                        # 正则表达式
+html-escape = "0.2"                   # HTML实体解码
+urlencoding = "2.1"                   # URL编码

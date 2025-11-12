@@ -5,6 +5,7 @@ mod config;
 mod history;
 mod i18n;
 mod prompts;
+mod search_tool;
 mod security;
 mod tools;
 mod ui;

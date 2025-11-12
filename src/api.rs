@@ -449,6 +449,7 @@ pub async fn execute_tool_calls(
             working_dir,
             require_approval,
         )
+        .await
         .unwrap_or_else(|e| tools::ToolResult::error(format!("工具执行错误: {}", e)));
 
         // 更新 UI 显示

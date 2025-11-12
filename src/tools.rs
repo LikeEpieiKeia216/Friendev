@@ -161,6 +161,78 @@ pub fn get_available_tools() -> Vec<Tool> {
                 }),
             },
         },
+        Tool {
+            tool_type: "function".to_string(),
+            function: ToolFunction {
+                name: "network_search_auto".to_string(),
+                description: "Search the web with automatic fallback: tries DuckDuckGo first, then Bing if DuckDuckGo fails. Returns title, URL, and snippet for each result.".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "keywords": {
+                            "type": "string",
+                            "description": "Search keywords or query"
+                        },
+                        "max_results": {
+                            "type": "integer",
+                            "description": "Maximum number of results to return (default 5, max 20)",
+                            "default": 5,
+                            "minimum": 1,
+                            "maximum": 20
+                        }
+                    },
+                    "required": ["keywords"]
+                }),
+            },
+        },
+        Tool {
+            tool_type: "function".to_string(),
+            function: ToolFunction {
+                name: "network_search_duckduckgo".to_string(),
+                description: "Search the web using DuckDuckGo search engine. Returns title, URL, and snippet for each result.".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "keywords": {
+                            "type": "string",
+                            "description": "Search keywords or query"
+                        },
+                        "max_results": {
+                            "type": "integer",
+                            "description": "Maximum number of results to return (default 5, max 20)",
+                            "default": 5,
+                            "minimum": 1,
+                            "maximum": 20
+                        }
+                    },
+                    "required": ["keywords"]
+                }),
+            },
+        },
+        Tool {
+            tool_type: "function".to_string(),
+            function: ToolFunction {
+                name: "network_search_bing".to_string(),
+                description: "Search the web using Bing search engine. Returns title, URL, and snippet for each result.".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "keywords": {
+                            "type": "string",
+                            "description": "Search keywords or query"
+                        },
+                        "max_results": {
+                            "type": "integer",
+                            "description": "Maximum number of results to return (default 5, max 20)",
+                            "default": 5,
+                            "minimum": 1,
+                            "maximum": 20
+                        }
+                    },
+                    "required": ["keywords"]
+                }),
+            },
+        },
     ]
 }
 
@@ -200,7 +272,21 @@ struct FileReplaceArgs {
     edits: Vec<Edit>,
 }
 
-pub fn execute_tool(name: &str, arguments: &str, working_dir: &Path, require_approval: bool) -> Result<ToolResult> {
+#[derive(Debug, Deserialize)]
+struct SearchArgs {
+    keywords: String,
+    #[serde(default = "default_max_results")]
+    max_results: usize,
+}
+
+fn default_max_results() -> usize {
+    5
+}
+
+pub async fn execute_tool(name: &str, arguments: &str, working_dir: &Path, require_approval: bool) -> Result<ToolResult> {
+    // 限制max_results到20以内
+    let limit_results = |max: usize| std::cmp::min(std::cmp::max(1, max), 20);
+    
     match name {
         "file_list" => {
             let args: FileListArgs = serde_json::from_str(arguments)
@@ -477,6 +563,80 @@ pub fn execute_tool(name: &str, arguments: &str, working_dir: &Path, require_app
             );
             
             Ok(ToolResult::ok(brief, output))
+        }
+        "network_search_auto" => {
+            let args: SearchArgs = serde_json::from_str(arguments)?;
+            let max_results = limit_results(args.max_results);
+            
+            match crate::search_tool::search_auto(&args.keywords, max_results).await {
+                Ok(results) => {
+                    let brief = format!("找到 {} 个结果", results.len());
+                    let mut output = format!("搜索关键词: {}\n找到 {} 个结果:\n\n", args.keywords, results.len());
+                    
+                    for (idx, result) in results.iter().enumerate() {
+                        output.push_str(&format!(
+                            "{}. [{}]\n   URL: {}\n   摘要: {}\n\n",
+                            idx + 1,
+                            result.title,
+                            result.url,
+                            result.snippet
+                        ));
+                    }
+                    
+                    Ok(ToolResult::ok(brief, output))
+                }
+                Err(e) => Ok(ToolResult::error(format!("搜索失败: {}", e)))
+            }
+        }
+        "network_search_duckduckgo" => {
+            let args: SearchArgs = serde_json::from_str(arguments)?;
+            let max_results = limit_results(args.max_results);
+            
+            let client = crate::search_tool::SearchClient::new();
+            match client.search_duckduckgo(&args.keywords, max_results).await {
+                Ok(results) => {
+                    let brief = format!("DuckDuckGo: 找到 {} 个结果", results.len());
+                    let mut output = format!("搜索引擎: DuckDuckGo\n关键词: {}\n找到 {} 个结果:\n\n", args.keywords, results.len());
+                    
+                    for (idx, result) in results.iter().enumerate() {
+                        output.push_str(&format!(
+                            "{}. [{}]\n   URL: {}\n   摘要: {}\n\n",
+                            idx + 1,
+                            result.title,
+                            result.url,
+                            result.snippet
+                        ));
+                    }
+                    
+                    Ok(ToolResult::ok(brief, output))
+                }
+                Err(e) => Ok(ToolResult::error(format!("DuckDuckGo搜索失败: {}", e)))
+            }
+        }
+        "network_search_bing" => {
+            let args: SearchArgs = serde_json::from_str(arguments)?;
+            let max_results = limit_results(args.max_results);
+            
+            let client = crate::search_tool::SearchClient::new();
+            match client.search_bing(&args.keywords, max_results).await {
+                Ok(results) => {
+                    let brief = format!("Bing: 找到 {} 个结果", results.len());
+                    let mut output = format!("搜索引擎: Bing\n关键词: {}\n找到 {} 个结果:\n\n", args.keywords, results.len());
+                    
+                    for (idx, result) in results.iter().enumerate() {
+                        output.push_str(&format!(
+                            "{}. [{}]\n   URL: {}\n   摘要: {}\n\n",
+                            idx + 1,
+                            result.title,
+                            result.url,
+                            result.snippet
+                        ));
+                    }
+                    
+                    Ok(ToolResult::ok(brief, output))
+                }
+                Err(e) => Ok(ToolResult::error(format!("Bing搜索失败: {}", e)))
+            }
         }
         _ => Ok(ToolResult::error(format!("未知工具: {}", name))),
     }
