@@ -51,12 +51,6 @@ jobs:
             release_name: Windows ARM64
             exe_name: friendev.exe
           - os: windows-latest
-            target: i586-pc-windows-msvc
-            artifact_name: friendev-windows-i586
-            asset_name: friendev-windows-i586.zip
-            release_name: Windows i586
-            exe_name: friendev.exe
-          - os: windows-latest
             target: x86_64-pc-windows-gnu
             artifact_name: friendev-windows-amd64-gnu
             asset_name: friendev-windows-amd64-gnu.zip
@@ -80,12 +74,6 @@ jobs:
             artifact_name: friendev-linux-i686
             asset_name: friendev-linux-i686.tar.gz
             release_name: Linux i686 GNU
-            exe_name: friendev
-          - os: ubuntu-latest
-            target: i586-unknown-linux-gnu
-            artifact_name: friendev-linux-i586
-            asset_name: friendev-linux-i586.tar.gz
-            release_name: Linux i586 GNU
             exe_name: friendev
           # Linux Platform - ARM
           - os: ubuntu-latest
