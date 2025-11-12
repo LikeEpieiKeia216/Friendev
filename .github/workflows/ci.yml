@@ -221,7 +221,7 @@ jobs:
     - name: Set up Rust
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly
+        toolchain: stable
         target: ${{ matrix.target }}
         override: true
 
@@ -301,7 +301,6 @@ jobs:
         args: --release --target ${{ matrix.target }}
       env:
         RUST_BACKTRACE: 1
-        RING_PREGENERATE_ASM: 1
 
     - name: Build (native cargo for s390x and Android targets)
       if: matrix.target == 's390x-unknown-linux-gnu' || contains(matrix.target, 'linux-android')
@@ -311,7 +310,6 @@ jobs:
         args: --release --target ${{ matrix.target }}
       env:
         RUST_BACKTRACE: 1
-        RING_PREGENERATE_ASM: 1
 
     - name: Build (native for Windows/macOS)
       if: matrix.os != 'ubuntu-latest'
@@ -321,7 +319,6 @@ jobs:
         args: --release --target ${{ matrix.target }}
       env:
         RUST_BACKTRACE: 1
-        RING_PREGENERATE_ASM: 1
     
     - name: Create Output Directory
       run: mkdir -p release-package
