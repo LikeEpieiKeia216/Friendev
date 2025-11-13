@@ -108,12 +108,6 @@ jobs:
             release_name: Linux RISC-V 64
             exe_name: friendev
           - os: ubuntu-latest
-            target: loongarch64-unknown-linux-gnu
-            artifact_name: friendev-linux-loongarch64
-            asset_name: friendev-linux-loongarch64.tar.gz
-            release_name: Linux LoongArch64
-            exe_name: friendev
-          - os: ubuntu-latest
             target: powerpc64le-unknown-linux-gnu
             artifact_name: friendev-linux-powerpc64le
             asset_name: friendev-linux-powerpc64le.tar.gz
@@ -187,20 +181,6 @@ jobs:
             artifact_name: friendev-freebsd-i686
             asset_name: friendev-freebsd-i686.tar.gz
             release_name: FreeBSD i686
-            exe_name: friendev
-          # NetBSD
-          - os: ubuntu-latest
-            target: x86_64-unknown-netbsd
-            artifact_name: friendev-netbsd-amd64
-            asset_name: friendev-netbsd-amd64.tar.gz
-            release_name: NetBSD AMD64
-            exe_name: friendev
-          # OpenBSD
-          - os: ubuntu-latest
-            target: x86_64-unknown-openbsd
-            artifact_name: friendev-openbsd-amd64
-            asset_name: friendev-openbsd-amd64.tar.gz
-            release_name: OpenBSD AMD64
             exe_name: friendev
 
     steps:
