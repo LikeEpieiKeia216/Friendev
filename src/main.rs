@@ -1,3 +1,4 @@
+mod agents;
 mod api;
 mod chat;
 mod commands;
@@ -66,8 +67,64 @@ async fn main() -> Result<()> {
 
                 // 处理命令
                 if line.starts_with('/') {
-                    if let Err(e) = commands::handle_command(line, &mut config, &mut session, &mut api_client).await {
-                        eprintln!("\n\x1b[31m[X] Error:\x1b[0m {}\n", e);
+                    // 特殊处理 /agents.md 命令
+                    if line == "/agents.md" {
+                        match commands::handle_agents_md_command(&session, &i18n).await {
+                            Ok(analysis_prompt) => {
+                                // 将提示词作为 USER 消息添加到 session
+                                let analysis_message = Message {
+                                    role: "user".to_string(),
+                                    content: analysis_prompt,
+                                    tool_calls: None,
+                                    tool_call_id: None,
+                                    name: None,
+                                };
+                                session.add_message(analysis_message);
+                                
+                                // 自动发送给 AI（下面的流程与正常用户消息相同）
+                                let mut messages = build_messages_with_agents_md(&session, &config)?;
+                                
+                                loop {
+                                    match chat::send_and_receive(&api_client, messages.clone(), &session).await {
+                                        Ok((response_msg, tool_calls, mut displays)) => {
+                                            session.add_message(response_msg);
+                                            
+                                            if let Some(calls) = tool_calls {
+                                                let tool_results = api::execute_tool_calls(
+                                                    &calls,
+                                                    &session.working_directory,
+                                                    &mut displays,
+                                                    true
+                                                ).await;
+                                                
+                                                for result in tool_results {
+                                                    session.add_message(result);
+                                                }
+                                                
+                                                messages = build_messages_with_agents_md(&session, &config)?;
+                                                continue;
+                                            }
+                                            break;
+                                        }
+                                        Err(e) => {
+                                            eprintln!("\n\x1b[31m[X] API Error:\x1b[0m {}\n", e);
+                                            if !session.messages.is_empty() {
+                                                session.messages.pop();
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                session.save()?;
+                            }
+                            Err(e) => eprintln!("\n\x1b[31m[X] Error:\x1b[0m {}\n", e),
+                        }
+                    } else {
+                        // 其他命令
+                        if let Err(e) = commands::handle_command(line, &mut config, &mut session, &mut api_client).await {
+                            eprintln!("\n\x1b[31m[X] Error:\x1b[0m {}\n", e);
+                        }
                     }
                     continue;
                 }
@@ -89,16 +146,8 @@ async fn main() -> Result<()> {
                 session.add_message(user_message);
 
                 // 准备消息，添加系统提示词
-                let mut messages = vec![
-                    Message {
-                        role: "system".to_string(),
-                        content: prompts::get_system_prompt(&config.ai_language, &config.current_model),
-                        tool_calls: None,
-                        tool_call_id: None,
-                        name: None,
-                    }
-                ];
-                messages.extend(session.messages.clone());
+                let mut messages = build_messages_with_agents_md(&session, &config)?;
+                // messages already contains: [SYSTEM, ...history]
                 
                 loop {
                     match chat::send_and_receive(&api_client, messages.clone(), &session).await {
@@ -119,16 +168,7 @@ async fn main() -> Result<()> {
                                 }
                                 
                                 // 继续循环，发送工具结果给 AI
-                                messages = vec![
-                                    Message {
-                                        role: "system".to_string(),
-                                        content: prompts::get_system_prompt(&config.ai_language, &config.current_model),
-                                        tool_calls: None,
-                                        tool_call_id: None,
-                                        name: None,
-                                    }
-                                ];
-                                messages.extend(session.messages.clone());
+                                messages = build_messages_with_agents_md(&session, &config)?;
                                 continue;
                             }
                             
@@ -170,3 +210,40 @@ async fn main() -> Result<()> {
 // - commands.rs: 命令处理 (handle_command, print_help)
 // - prompts.rs: 提示与欢迎信息 (get_system_prompt, print_welcome, print_help)
 // - security.rs: 安全检查 (is_input_suspicious)
+
+/// 构建消息序列。包含 SYSTEM + 历史 + AGENTS.md（如果存在）
+fn build_messages_with_agents_md(
+    session: &ChatSession,
+    config: &Config,
+) -> Result<Vec<Message>> {
+    let mut messages = vec![
+        Message {
+            role: "system".to_string(),
+            content: prompts::get_system_prompt(&config.ai_language, &config.current_model),
+            tool_calls: None,
+            tool_call_id: None,
+            name: None,
+        }
+    ];
+    
+    // 添加历史消息
+    messages.extend(session.messages.clone());
+    
+    // 先检查是否存在 AGENTS.md
+    if let Ok(Some(agents_content)) = agents::load_agents_md(&session.working_directory) {
+        // 旧的 AGENTS.md 消息（由上次发送），从 messages 中移除
+        // 也就是需要移除准最后一条 USER 消息之前的所有 USER 消息
+        // 但实际上：AGENTS.md 不会被保存到 session.messages
+        // 所以不需要删除，直接添加新的即可
+        
+        messages.push(Message {
+            role: "user".to_string(),
+            content: format!("# Project Context (AGENTS.md)\n\n{}", agents_content),
+            tool_calls: None,
+            tool_call_id: None,
+            name: None,
+        });
+    }
+    
+    Ok(messages)
+}

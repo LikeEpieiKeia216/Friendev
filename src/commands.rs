@@ -34,6 +34,9 @@ pub async fn handle_command(
         Some(&"/language") | Some(&"/lang") => {
             handle_language_command(&parts, config, &i18n)?;
         }
+        Some(&"/agents.md") => {
+            handle_agents_md_command(session, &i18n).await?;
+        }
         _ => {
             println!("\n\x1b[31m[X] {}: {}\x1b[0m\n", i18n.get("unknown_command"), command);
         }
@@ -254,4 +257,19 @@ fn print_help(i18n: &I18n) {
     
     println!("\n{}", "═".repeat(60).bright_black());
     println!();
+}
+
+/// 处理 /agents.md 命令 - 返回提示词（由 main.rs 自动发送给 AI）
+pub async fn handle_agents_md_command(
+    session: &ChatSession,
+    i18n: &I18n,
+) -> Result<String> {
+    println!("\n\x1b[33m[*] Analyzing project structure...\x1b[0m");
+    
+    // 生成分析提示词
+    let analysis_prompt = crate::agents::generate_agents_analysis_prompt(&session.working_directory)?;
+    
+    println!("\x1b[32m[OK]\x1b[0m Sending to AI for AGENTS.md generation...\n");
+    
+    Ok(analysis_prompt)
 }
