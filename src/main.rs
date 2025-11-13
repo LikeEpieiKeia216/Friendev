@@ -42,6 +42,9 @@ async fn main() -> Result<()> {
     let mut session = ChatSession::new(working_dir.clone());
     session.save()?;
     println!("\x1b[32m[OK]\x1b[0m \x1b[2m{}:\x1b[0m \x1b[90m{}\x1b[0m\n", i18n.get("new_session"), session.id);
+    
+    // 自动删除0消息的历史文件
+    ChatSession::cleanup_empty_sessions()?;
 
     // 创建 API 客户端
     let mut api_client = ApiClient::new(config.clone());

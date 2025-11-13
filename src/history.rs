@@ -130,4 +130,23 @@ impl ChatSession {
         }
         Ok(())
     }
+
+    /// Automatically delete all sessions with 0 messages
+    pub fn cleanup_empty_sessions() -> Result<()> {
+        let sessions = Self::list_all()?;
+        let mut deleted_count = 0;
+        
+        for session in sessions {
+            if session.messages.is_empty() {
+                session.delete()?;
+                deleted_count += 1;
+            }
+        }
+        
+        if deleted_count > 0 {
+            println!("\x1b[33m[*] Cleaned up {} empty session(s)\x1b[0m", deleted_count);
+        }
+        
+        Ok(())
+    }
 }
