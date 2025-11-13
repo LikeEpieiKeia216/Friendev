@@ -99,6 +99,11 @@ pub fn get_available_tools() -> Vec<Tool> {
                                         "type": "boolean",
                                         "description": "If true, uses loose matching: ignores leading/trailing whitespace and normalizes line endings (default false for exact match)",
                                         "default": false
+                                    },
+                                    "regex": {
+                                        "type": "boolean",
+                                        "description": "If true, treats 'old' as a regular expression pattern for flexible matching (e.g., pattern.*content, \\d+ for numbers)",
+                                        "default": false
                                     }
                                 },
                                 "required": ["old", "new"]

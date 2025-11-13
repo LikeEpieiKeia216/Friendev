@@ -30,6 +30,8 @@ pub struct Edit {
     pub replace_all: bool,
     #[serde(default)]
     pub normalize: bool,  // 是否启用宽松匹配（忽略多余空格/换行符差异）
+    #[serde(default)]
+    pub regex: bool,  // 是否使用正则表达式匹配
 }
 
 #[derive(Debug, Deserialize)]

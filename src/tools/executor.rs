@@ -2,6 +2,7 @@ use anyhow::Result;
 use serde_json::json;
 use std::fs;
 use std::path::Path;
+use regex::Regex;
 
 use crate::tools::types::{ToolResult, is_action_approved, approve_action_for_session};
 use crate::tools::args::{FileListArgs, FileReadArgs, FileWriteArgs, FileReplaceArgs, SearchArgs};
@@ -318,51 +319,77 @@ pub async fn execute_tool(name: &str, arguments: &str, working_dir: &Path, requi
             }
             
             for (edit_idx, edit) in args.edits.iter().enumerate() {
-                let search_pattern = if edit.normalize {
-                    normalize_whitespace(&edit.old)
-                } else {
-                    edit.old.clone()
-                };
-                
-                content = if edit.replace_all {
-                    let count = if edit.normalize {
-                        let normalized_content = normalize_whitespace(&content);
-                        normalized_content.matches(&search_pattern).count()
-                    } else {
-                        content.matches(&search_pattern).count()
-                    };
-                    replacements_made += count;
-                    
-                    if edit.normalize {
-                        let normalized_content = normalize_whitespace(&content);
-                        let normalized_result = normalized_content.replace(&search_pattern, &edit.new);
-                        // 还原厚实的换行符
-                        normalized_result.replace("\n", "\r\n")  // 以厚实换行符为了可读性
-                    } else {
-                        content.replace(&search_pattern, &edit.new)
+                if edit.regex {
+                    // 正则表达式匹配
+                    match Regex::new(&edit.old) {
+                        Ok(re) => {
+                            let count = re.find_iter(&content).count();
+                            if count > 0 {
+                                content = if edit.replace_all {
+                                    replacements_made += count;
+                                    re.replace_all(&content, &edit.new).into_owned()
+                                } else {
+                                    replacements_made += 1;
+                                    re.replace(&content, &edit.new).into_owned()
+                                };
+                            } else {
+                                failed_edits.push((edit_idx, edit.old.clone()));
+                            }
+                        }
+                        Err(e) => {
+                            return Ok(ToolResult::error(
+                                format!("编辑#{}的正则表达式无效: {}", edit_idx + 1, e)
+                            ));
+                        }
                     }
                 } else {
-                    let found = if edit.normalize {
-                        normalize_whitespace(&content).contains(&search_pattern)
+                    // 字符串匹配
+                    let search_pattern = if edit.normalize {
+                        normalize_whitespace(&edit.old)
                     } else {
-                        content.contains(&search_pattern)
+                        edit.old.clone()
                     };
                     
-                    if found {
-                        replacements_made += 1;
+                    content = if edit.replace_all {
+                        let count = if edit.normalize {
+                            let normalized_content = normalize_whitespace(&content);
+                            normalized_content.matches(&search_pattern).count()
+                        } else {
+                            content.matches(&search_pattern).count()
+                        };
+                        replacements_made += count;
+                        
                         if edit.normalize {
                             let normalized_content = normalize_whitespace(&content);
-                            let normalized_result = normalized_content.replacen(&search_pattern, &edit.new, 1);
+                            let normalized_result = normalized_content.replace(&search_pattern, &edit.new);
+                            // 还原厚实的换行符
                             normalized_result.replace("\n", "\r\n")
                         } else {
-                            content.replacen(&search_pattern, &edit.new, 1)
+                            content.replace(&search_pattern, &edit.new)
                         }
                     } else {
-                        // 记录失败的编辑用于诊断
-                        failed_edits.push((edit_idx, edit.old.clone()));
-                        content
-                    }
-                };
+                        let found = if edit.normalize {
+                            normalize_whitespace(&content).contains(&search_pattern)
+                        } else {
+                            content.contains(&search_pattern)
+                        };
+                        
+                        if found {
+                            replacements_made += 1;
+                            if edit.normalize {
+                                let normalized_content = normalize_whitespace(&content);
+                                let normalized_result = normalized_content.replacen(&search_pattern, &edit.new, 1);
+                                normalized_result.replace("\n", "\r\n")
+                            } else {
+                                content.replacen(&search_pattern, &edit.new, 1)
+                            }
+                        } else {
+                            // 记录失败的编辑用于诊断
+                            failed_edits.push((edit_idx, edit.old.clone()));
+                            content
+                        }
+                    };
+                }
             }
             
             // 检查是否有修改
