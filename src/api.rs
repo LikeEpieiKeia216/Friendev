@@ -443,6 +443,18 @@ pub async fn execute_tool_calls(
     let mut results = Vec::new();
 
     for tc in tool_calls {
+        // Skip tool calls with empty IDs, names, or invalid JSON
+        if tc.id.is_empty() || tc.function.name.is_empty() {
+            eprintln!("\x1b[33m[!] Warning:\x1b[0m Skipping invalid tool call: id={}, name={}", tc.id, tc.function.name);
+            continue;
+        }
+
+        // Check if the JSON arguments are valid before executing
+        if serde_json::from_str::<serde_json::Value>(&tc.function.arguments).is_err() {
+            eprintln!("\x1b[33m[!] Warning:\x1b[0m Skipping tool call with invalid JSON arguments: {}", tc.function.name);
+            continue;
+        }
+
         let tool_result = tools::execute_tool(
             &tc.function.name,
             &tc.function.arguments,
