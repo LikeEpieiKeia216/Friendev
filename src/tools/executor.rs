@@ -126,11 +126,24 @@ pub async fn execute_tool(name: &str, arguments: &str, working_dir: &Path, requi
                     format!("覆盖文件: {}", target_path.display())
                 };
                 
-                let (approved, always) = prompt_approval(
+                let (approved, always, view_details) = prompt_approval(
                     "WriteFile",
                     &action_desc,
                     Some(&args.content)  // 传递内容预览
                 )?;
+                
+                // 如果用户选择查看详细信息
+                if view_details {
+                    let continue_operation = crate::ui::show_detailed_content(
+                        "WriteFile",
+                        &target_path.display().to_string(),
+                        &args.content
+                    )?;
+                    
+                    if !continue_operation {
+                        return Ok(ToolResult::error("用户取消了该操作".to_string()));
+                    }
+                }
                 
                 if !approved {
                     return Ok(ToolResult::error("用户拒绝了该操作".to_string()));
@@ -232,11 +245,52 @@ pub async fn execute_tool(name: &str, arguments: &str, working_dir: &Path, requi
                     preview
                 };
                 
-                let (approved, always) = prompt_approval(
+                let (approved, always, view_details) = prompt_approval(
                     "ReplaceFile",
                     &target_path.display().to_string(),
                     Some(&full_preview)
                 )?;
+                
+                // 如果用户选择查看详细信息
+                if view_details {
+                    // 读取文件内容
+                    let file_content = fs::read_to_string(&target_path)?;
+                    
+                    // 构建详细的编辑信息
+                    let mut detailed_changes = String::new();
+                    detailed_changes.push_str("\n=== 当前文件内容 ===\n");
+                    detailed_changes.push_str(&file_content);
+                    detailed_changes.push_str("\n\n=== 计划进行的更改 ===\n");
+                    
+                    for (i, edit) in args.edits.iter().enumerate() {
+                        detailed_changes.push_str(&format!("\n编辑 #{}:\n", i + 1));
+                        
+                        if edit.replace_all {
+                            detailed_changes.push_str(&format!("  替换所有出现的: '{}'", edit.old));
+                        } else {
+                            detailed_changes.push_str(&format!("  替换第一次出现的: '{}'", edit.old));
+                        }
+                        
+                        if edit.new.contains('\n') || edit.new.chars().count() > 50 {
+                            detailed_changes.push_str("\n  替换为 (多行):\n");
+                            for line in edit.new.lines() {
+                                detailed_changes.push_str(&format!("    {}\n", line));
+                            }
+                        } else {
+                            detailed_changes.push_str(&format!("\n  替换为: '{}'", edit.new));
+                        }
+                    }
+                    
+                    let continue_operation = crate::ui::show_detailed_content(
+                        "ReplaceFile",
+                        &target_path.display().to_string(),
+                        &detailed_changes
+                    )?;
+                    
+                    if !continue_operation {
+                        return Ok(ToolResult::error("用户取消了该操作".to_string()));
+                    }
+                }
                 
                 if !approved {
                     return Ok(ToolResult::error("用户拒绝了该操作".to_string()));
