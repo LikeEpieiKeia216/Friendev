@@ -1,3 +1,2 @@
-*example* linguist-generated
-*example* binary
-*example* linguist-vendored
+example/** linguist-vendored
+example* linguist-vendored
