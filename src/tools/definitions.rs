@@ -94,6 +94,11 @@ pub fn get_available_tools() -> Vec<Tool> {
                                         "type": "boolean",
                                         "description": "Whether to replace all matches (default false, replaces only the first)",
                                         "default": false
+                                    },
+                                    "normalize": {
+                                        "type": "boolean",
+                                        "description": "If true, uses loose matching: ignores leading/trailing whitespace and normalizes line endings (default false for exact match)",
+                                        "default": false
                                     }
                                 },
                                 "required": ["old", "new"]

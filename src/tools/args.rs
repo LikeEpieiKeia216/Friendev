@@ -28,6 +28,8 @@ pub struct Edit {
     pub new: String,
     #[serde(default)]
     pub replace_all: bool,
+    #[serde(default)]
+    pub normalize: bool,  // 是否启用宽松匹配（忽略多余空格/换行符差异）
 }
 
 #[derive(Debug, Deserialize)]

@@ -307,16 +307,59 @@ pub async fn execute_tool(name: &str, arguments: &str, working_dir: &Path, requi
             
             // 应用所有编辑
             let mut replacements_made = 0;
-            for edit in &args.edits {
-                content = if edit.replace_all {
-                    let count = content.matches(&edit.old).count();
-                    replacements_made += count;
-                    content.replace(&edit.old, &edit.new)
+            let mut failed_edits = Vec::new();
+            
+            // 辅助函数：规范化字符串（为宽松匹配优化）
+            fn normalize_whitespace(s: &str) -> String {
+                s.lines()
+                    .map(|line| line.trim())
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            }
+            
+            for (edit_idx, edit) in args.edits.iter().enumerate() {
+                let search_pattern = if edit.normalize {
+                    normalize_whitespace(&edit.old)
                 } else {
-                    if content.contains(&edit.old) {
-                        replacements_made += 1;
-                        content.replacen(&edit.old, &edit.new, 1)
+                    edit.old.clone()
+                };
+                
+                content = if edit.replace_all {
+                    let count = if edit.normalize {
+                        let normalized_content = normalize_whitespace(&content);
+                        normalized_content.matches(&search_pattern).count()
                     } else {
+                        content.matches(&search_pattern).count()
+                    };
+                    replacements_made += count;
+                    
+                    if edit.normalize {
+                        let normalized_content = normalize_whitespace(&content);
+                        let normalized_result = normalized_content.replace(&search_pattern, &edit.new);
+                        // 还原厚实的换行符
+                        normalized_result.replace("\n", "\r\n")  // 以厚实换行符为了可读性
+                    } else {
+                        content.replace(&search_pattern, &edit.new)
+                    }
+                } else {
+                    let found = if edit.normalize {
+                        normalize_whitespace(&content).contains(&search_pattern)
+                    } else {
+                        content.contains(&search_pattern)
+                    };
+                    
+                    if found {
+                        replacements_made += 1;
+                        if edit.normalize {
+                            let normalized_content = normalize_whitespace(&content);
+                            let normalized_result = normalized_content.replacen(&search_pattern, &edit.new, 1);
+                            normalized_result.replace("\n", "\r\n")
+                        } else {
+                            content.replacen(&search_pattern, &edit.new, 1)
+                        }
+                    } else {
+                        // 记录失败的编辑用于诊断
+                        failed_edits.push((edit_idx, edit.old.clone()));
                         content
                     }
                 };
@@ -324,9 +367,45 @@ pub async fn execute_tool(name: &str, arguments: &str, working_dir: &Path, requi
             
             // 检查是否有修改
             if content == original_content {
-                return Ok(ToolResult::error(
-                    format!("未找到要替换的字符串。请确认 'old' 字符串与文件内容完全匹配。")
-                ));
+                // 生成详细的诊断信息
+                let mut error_msg = String::from("未找到要替换的字符串。诊断信息：\n");
+                
+                for (idx, search_str) in failed_edits.iter() {
+                    error_msg.push_str(&format!("\n编辑 #{}：\n", idx + 1));
+                    error_msg.push_str(&format!("  搜索字符串长度: {} 字符\n", search_str.chars().count()));
+                    error_msg.push_str(&format!("  搜索字符串 (前100字符): {}\n", 
+                        if search_str.chars().count() > 100 {
+                            search_str.chars().take(100).collect::<String>()
+                        } else {
+                            search_str.clone()
+                        }
+                    ));
+                    error_msg.push_str(&format!("  包含换行符: {}\n", search_str.contains('\n')));
+                    error_msg.push_str(&format!("  包含 \\r\\n: {}\n", search_str.contains("\r\n")));
+                    
+                    // 尝试找相似的内容作为建议
+                    let mut suggestions = Vec::new();
+                    for line in content.lines() {
+                        if line.contains(&search_str.trim()) {
+                            suggestions.push(line);
+                        }
+                    }
+                    
+                    if !suggestions.is_empty() && suggestions.len() <= 3 {
+                        error_msg.push_str("  文件中发现相似内容（可能是空格/换行符差异）:\n");
+                        for sugg in suggestions.iter().take(3) {
+                            error_msg.push_str(&format!("    {}\n", sugg));
+                        }
+                    }
+                }
+                
+                error_msg.push_str("\n提示：检查以下可能的问题:\n");
+                error_msg.push_str("  1. 行结束符差异 (Windows \\r\\n vs Unix \\n)\n");
+                error_msg.push_str("  2. 前后有额外空格\n");
+                error_msg.push_str("  3. 缩进使用了不同的制表符或空格\n");
+                error_msg.push_str("  4. 特殊字符编码差异\n");
+                
+                return Ok(ToolResult::error(error_msg));
             }
             
             // 写回文件
