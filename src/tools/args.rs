@@ -50,3 +50,16 @@ pub struct SearchArgs {
 pub fn default_max_results() -> usize {
     5
 }
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct DiffHunk {
+    pub start_line: usize,  // 开始行号（从1开始）
+    pub num_lines: usize,   // 原文件中的行数
+    pub new_content: String, // 新内容（完整文本）
+}
+
+#[derive(Debug, Deserialize)]
+pub struct FileDiffEditArgs {
+    pub path: String,
+    pub hunks: Vec<DiffHunk>, // 多个 hunk 编辑
+}

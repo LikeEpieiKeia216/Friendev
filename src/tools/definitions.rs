@@ -186,5 +186,44 @@ pub fn get_available_tools() -> Vec<Tool> {
                 }),
             },
         },
+        Tool {
+            tool_type: "function".to_string(),
+            function: ToolFunction {
+                name: "file_diff_edit".to_string(),
+                description: "Edit file content using diff-style hunks. Each hunk specifies a line range and its new content. This is useful for precise multi-location edits.".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "File path to edit"
+                        },
+                        "hunks": {
+                            "type": "array",
+                            "description": "List of diff hunks to apply in order",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "start_line": {
+                                        "type": "integer",
+                                        "description": "Starting line number (1-indexed)"
+                                    },
+                                    "num_lines": {
+                                        "type": "integer",
+                                        "description": "Number of lines to replace in the original file"
+                                    },
+                                    "new_content": {
+                                        "type": "string",
+                                        "description": "New content to replace the old lines (multi-line supported)"
+                                    }
+                                },
+                                "required": ["start_line", "num_lines", "new_content"]
+                            }
+                        }
+                    },
+                    "required": ["path", "hunks"]
+                }),
+            },
+        },
     ]
 }

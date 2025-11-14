@@ -5,7 +5,7 @@ use std::path::Path;
 use regex::Regex;
 
 use crate::tools::types::{ToolResult, is_action_approved, approve_action_for_session};
-use crate::tools::args::{FileListArgs, FileReadArgs, FileWriteArgs, FileReplaceArgs, SearchArgs};
+use crate::tools::args::{FileListArgs, FileReadArgs, FileWriteArgs, FileReplaceArgs, SearchArgs, FileDiffEditArgs};
 use crate::ui::prompt_approval;
 
 // 限制max_results到20以内
@@ -534,6 +534,135 @@ pub async fn execute_tool(name: &str, arguments: &str, working_dir: &Path, requi
                 }
                 Err(e) => Ok(ToolResult::error(format!("Bing搜索失败: {}", e)))
             }
+        }
+        "file_diff_edit" => {
+            let args: FileDiffEditArgs = serde_json::from_str(arguments)?;
+            
+            let target_path = {
+                let p = Path::new(&args.path);
+                if p.is_absolute() {
+                    p.to_path_buf()
+                } else {
+                    working_dir.join(p)
+                }
+            };
+            
+            // 验证文件存在
+            if !target_path.exists() {
+                return Ok(ToolResult::error(format!("文件不存在: {}", target_path.display())));
+            }
+            
+            if !target_path.is_file() {
+                return Ok(ToolResult::error(format!("不是文件: {}", target_path.display())));
+            }
+            
+            // 需要审批
+            if require_approval && !is_action_approved("file_diff_edit") {
+                let preview = args.hunks.iter()
+                    .take(3)
+                    .map(|h| format!("- Line {}: {} lines → {} chars", h.start_line, h.num_lines, h.new_content.chars().count()))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                
+                let full_preview = if args.hunks.len() > 3 {
+                    format!("{}\n... and {} more hunks", preview, args.hunks.len() - 3)
+                } else {
+                    preview
+                };
+                
+                let (approved, always, view_details) = prompt_approval(
+                    "DiffEdit",
+                    &target_path.display().to_string(),
+                    Some(&full_preview)
+                )?;
+                
+                if view_details {
+                    let file_content = fs::read_to_string(&target_path)?;
+                    let mut detailed_changes = String::new();
+                    detailed_changes.push_str("\n=== 当前文件内容 ===\n");
+                    detailed_changes.push_str(&file_content);
+                    detailed_changes.push_str("\n\n=== 计划进行的更改 ===\n");
+                    
+                    for (i, hunk) in args.hunks.iter().enumerate() {
+                        detailed_changes.push_str(&format!("\nHunk #{}\n", i + 1));
+                        detailed_changes.push_str(&format!("  行号: {}\n", hunk.start_line));
+                        detailed_changes.push_str(&format!("  原行数: {}\n", hunk.num_lines));
+                        detailed_changes.push_str("  新内容:\n");
+                        for line in hunk.new_content.lines() {
+                            detailed_changes.push_str(&format!("    {}\n", line));
+                        }
+                    }
+                    
+                    let continue_operation = crate::ui::show_detailed_content(
+                        "DiffEdit",
+                        &target_path.display().to_string(),
+                        &detailed_changes
+                    )?;
+                    
+                    if !continue_operation {
+                        return Ok(ToolResult::error("用户取消了该操作".to_string()));
+                    }
+                }
+                
+                if !approved {
+                    return Ok(ToolResult::error("用户拒绝了该操作".to_string()));
+                }
+                
+                if always {
+                    approve_action_for_session("file_diff_edit");
+                }
+            }
+            
+            // 读取文件
+            let content = fs::read_to_string(&target_path)?;
+            let mut lines: Vec<String> = content.lines().map(|s| s.to_string()).collect();
+            
+            // 检测换行符风格
+            let uses_crlf = content.contains("\r\n");
+            
+            // 应用所有 hunk（从后到前，避免行号偏移）
+            let mut hunks = args.hunks.clone();
+            hunks.sort_by(|a, b| b.start_line.cmp(&a.start_line));
+            
+            for hunk in hunks.iter() {
+                if hunk.start_line == 0 {
+                    return Ok(ToolResult::error("行号必须从1开始".to_string()));
+                }
+                
+                let start_idx = hunk.start_line - 1;
+                let end_idx = std::cmp::min(start_idx + hunk.num_lines, lines.len());
+                
+                if start_idx > lines.len() {
+                    return Ok(ToolResult::error(format!("行号超出范围: {}，文件总行数: {}", hunk.start_line, lines.len())));
+                }
+                
+                // 构建新的行列表
+                let mut new_lines = Vec::new();
+                new_lines.extend_from_slice(&lines[..start_idx]);
+                new_lines.extend(hunk.new_content.lines().map(|s| s.to_string()));
+                new_lines.extend_from_slice(&lines[end_idx..]);
+                
+                lines = new_lines;
+            }
+            
+            // 重建文件内容
+            let new_content = lines.join("\n");
+            let final_content = if uses_crlf {
+                new_content.replace("\n", "\r\n")
+            } else {
+                new_content
+            };
+            
+            fs::write(&target_path, &final_content)?;
+            
+            let brief = format!("应用了 {} 个 hunk", args.hunks.len());
+            let output = format!(
+                "文件已更新: {}\n应用了 {} 个 diff hunk",
+                target_path.display(),
+                args.hunks.len()
+            );
+            
+            Ok(ToolResult::ok(brief, output))
         }
         _ => Ok(ToolResult::error(format!("未知工具: {}", name))),
     }
