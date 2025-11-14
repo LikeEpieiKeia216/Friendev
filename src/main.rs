@@ -23,6 +23,9 @@ use i18n::I18n;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // 检查 --ally 参数
+    let auto_approve = env::args().any(|arg| arg == "--ally");
+    
     // 加载或初始化配置
     let mut config = match Config::load()? {
         Some(c) => c,
@@ -92,13 +95,13 @@ async fn main() -> Result<()> {
                                         Ok((response_msg, tool_calls, mut displays)) => {
                                             session.add_message(response_msg);
                                             
-                                            if let Some(calls) = tool_calls {
-                                                let tool_results = api::execute_tool_calls(
-                                                    &calls,
-                                                    &session.working_directory,
-                                                    &mut displays,
-                                                    true
-                                                ).await;
+                            if let Some(calls) = tool_calls {
+                                let tool_results = api::execute_tool_calls(
+                                    &calls,
+                                    &session.working_directory,
+                                    &mut displays,
+                                    !auto_approve
+                                ).await;
                                                 
                                                 for result in tool_results {
                                                     session.add_message(result);
@@ -158,12 +161,12 @@ async fn main() -> Result<()> {
                             session.add_message(response_msg);
                             
                             if let Some(calls) = tool_calls {
-                                // 执行工具调用（启用审批）
+                                // 执行工具调用（根据 --ally 参数决定是否需要审批）
                                 let tool_results = api::execute_tool_calls(
                                     &calls, 
                                     &session.working_directory,
                                     &mut displays,
-                                    true  // 需要用户审批
+                                    !auto_approve  // 如果设置了 --ally，则不需要用户审批
                                 ).await;
                                 
                                 for result in tool_results {
