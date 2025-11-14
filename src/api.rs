@@ -94,11 +94,74 @@ impl ApiClient {
         }
     }
     
+    /// 清理消息历史：移除没有对应工具响应的孤立工具调用
+    fn clean_messages(messages: &[Message]) -> Vec<Message> {
+        let mut cleaned = Vec::new();
+        let mut i = 0;
+        
+        while i < messages.len() {
+            let msg = &messages[i];
+            
+            // 如果是 assistant 消息且包含 tool_calls
+            if msg.role == "assistant" && msg.tool_calls.is_some() {
+                let tool_calls = msg.tool_calls.as_ref().unwrap();
+                
+                // 收集此消息的所有 tool_call_id
+                let tool_call_ids: std::collections::HashSet<_> = 
+                    tool_calls.iter().map(|tc| tc.id.clone()).collect();
+                
+                // 检查后续消息中是否存在对应的 tool 响应
+                let mut has_responses = std::collections::HashSet::new();
+                for j in (i + 1)..messages.len() {
+                    if messages[j].role == "tool" {
+                        if let Some(tool_call_id) = &messages[j].tool_call_id {
+                            if tool_call_ids.contains(tool_call_id) {
+                                has_responses.insert(tool_call_id.clone());
+                            }
+                        }
+                    } else if messages[j].role != "tool" {
+                        // 遇到非 tool 消息，停止搜索
+                        break;
+                    }
+                }
+                
+                // 如果有未响应的 tool_calls，过滤它们
+                if has_responses.len() < tool_call_ids.len() {
+                    let mut cleaned_msg = msg.clone();
+                    if let Some(ref mut calls) = cleaned_msg.tool_calls {
+                        calls.retain(|tc| has_responses.contains(&tc.id));
+                        
+                        // 如果没有任何 tool_calls 了，设置为 None
+                        if calls.is_empty() {
+                            cleaned_msg.tool_calls = None;
+                        }
+                    }
+                    
+                    // 只有在仍有 tool_calls 时才添加此消息
+                    if cleaned_msg.tool_calls.is_some() {
+                        cleaned.push(cleaned_msg);
+                    }
+                } else {
+                    cleaned.push(msg.clone());
+                }
+            } else {
+                cleaned.push(msg.clone());
+            }
+            
+            i += 1;
+        }
+        
+        cleaned
+    }
+    
     /// 带重试的流式请求
     pub async fn chat_stream_with_retry(
         &self,
         messages: Vec<Message>,
     ) -> Result<Box<dyn Stream<Item = Result<StreamChunk>> + Unpin + Send>> {
+        // 清理消息：移除孤立的工具调用
+        let cleaned_messages = Self::clean_messages(&messages);
+        
         let max_retries = self.config.max_retries;
         let base_delay = self.config.retry_delay_ms;
         
@@ -109,7 +172,7 @@ impl ApiClient {
                 tokio::time::sleep(tokio::time::Duration::from_millis(delay)).await;
             }
             
-            match self.chat_stream(messages.clone()).await {
+            match self.chat_stream(cleaned_messages.clone()).await {
                 Ok(stream) => return Ok(stream),
                 Err(e) => {
                     if attempt == max_retries {
