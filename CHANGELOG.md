@@ -10,6 +10,12 @@ all friendev update changelog on here.
 将会自动移除没有对应工具响应的孤立工具调用
 调整了启动时的代码顺序
 重构了部分逻辑
+修改了语言ID。
+为setup添加了i18n。
+更改了setup流程，新增语言设置。
+UI语言限制输入内容。
+新增了--setup参数，当带有此参数将会强制进入初次启动流程。
+充写了Changelog
 ---
 ## [0.1.3] - 2025-11-14
 
@@ -34,22 +40,14 @@ all friendev update changelog on here.
 - On startup, the system now automatically deletes any history files containing zero messages, keeping the session list clean. (By Friendev)
 ---
 ## [0.1.2] - 2025-11-13
-
-- `network_search_auto` Tool
-- `network_search_duckduckgo` Tool
-- `network_search_bing` Tool
-
-- Add timeout settings
-- SSE Json
-- Refactored some features
+新增了`network_search_auto`、`network_search_duckduckgo`与`network_search_bing`工具，现在AI可以搜索互联网内容了。
+- `network_search_auto`默认使用duckduckgo，如果duckduckgo无法使用则会降级为bing。
+为 AI 请求增加了超时重试机制。
+更改了流式传输JSON的逻辑，引入了SSE
+重构了部分功能
 ---
 ## [0.1.1] - 2025-11-09
 
-### new
-
-- `file_replace` Tool
-
-### edit
-
-- System Prompt to English
-- Optimize JSON validation and string processing
+新增了`file_replace`工具，现在AI可以局部替换了
+系统提示词被重写为英文
+Optimize JSON validation and string processing
