@@ -2,6 +2,7 @@ use anyhow::Result;
 use std::path::Path;
 
 use crate::tools::types::ToolResult;
+use crate::ui::get_i18n;
 
 mod utils;
 pub mod file_operations;
@@ -19,6 +20,10 @@ pub async fn execute_tool(name: &str, arguments: &str, working_dir: &Path, requi
         "network_search_duckduckgo" => search_operations::execute_search_duckduckgo(arguments).await,
         "network_search_bing" => search_operations::execute_search_bing(arguments).await,
         "run_command" => command_operations::execute_run_command(arguments, require_approval).await,
-        _ => Ok(ToolResult::error(format!("未知工具: {}", name))),
+        _ => {
+            let i18n = get_i18n();
+            let tmpl = i18n.get("tool_unknown");
+            Ok(ToolResult::error(tmpl.replace("{}", name)))
+        }
     }
 }

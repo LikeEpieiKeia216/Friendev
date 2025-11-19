@@ -100,6 +100,57 @@ pub fn get_messages() -> HashMap<String, String> {
     // UI：工具调用展示
     m.insert("tool_action_used".to_string(), "已使用".to_string());
     m.insert("tool_action_using".to_string(), "正在使用".to_string());
-    
+
+    // Tools & executor messages
+    m.insert("tool_unknown".to_string(), "未知工具: {}".to_string());
+
+    m.insert("file_not_exist".to_string(), "文件不存在: {}".to_string());
+    m.insert("file_not_file".to_string(), "不是文件: {}".to_string());
+    m.insert("file_path_not_exist".to_string(), "路径不存在: {}".to_string());
+    m.insert("file_not_directory".to_string(), "不是目录: {}".to_string());
+
+    m.insert("file_item_type_dir".to_string(), "目录".to_string());
+    m.insert("file_item_type_file".to_string(), "文件".to_string());
+    m.insert("file_item_size_na".to_string(), "-".to_string());
+    m.insert("file_list_item".to_string(), "{} [{}] ({})".to_string());
+    m.insert("file_list_empty".to_string(), "目录为空".to_string());
+    m.insert("file_list_brief".to_string(), "列出 {} 项".to_string());
+    m.insert("file_list_header".to_string(), "目录: {}".to_string());
+    m.insert("file_list_count".to_string(), "共 {} 项:".to_string());
+
+    m.insert("file_read_brief".to_string(), "读取 {} 行, {} 字节".to_string());
+    m.insert("file_read_header".to_string(), "文件: {}\n内容:".to_string());
+
+    m.insert("file_write_invalid_mode".to_string(), "无效的写入模式: {}，只支持 'overwrite' 或 'append'".to_string());
+    m.insert("file_write_append_action".to_string(), "追加到文件: {}".to_string());
+    m.insert("file_write_overwrite_action".to_string(), "覆盖文件: {}".to_string());
+    m.insert("file_write_append_brief".to_string(), "追加 {} 字节".to_string());
+    m.insert("file_write_append_output".to_string(), "成功追加到文件: {}\n追加: {} 字节\n当前大小: {} 字节".to_string());
+    m.insert("file_write_overwrite_brief".to_string(), "写入 {} 字节".to_string());
+    m.insert("file_write_overwrite_output".to_string(), "成功写入文件: {}\n大小: {} 字节".to_string());
+
+    m.insert("approval_user_rejected".to_string(), "用户拒绝了该操作".to_string());
+    m.insert("approval_user_cancelled".to_string(), "用户取消了该操作".to_string());
+
+    // Search tool messages
+    m.insert("search_engine_prefix".to_string(), "搜索引擎: {}\n".to_string());
+    m.insert("search_keywords_label".to_string(), "关键词".to_string());
+    m.insert("search_found_label".to_string(), "找到".to_string());
+    m.insert("search_url_label".to_string(), "URL".to_string());
+    m.insert("search_snippet_label".to_string(), "摘要".to_string());
+    m.insert("search_brief_with_engine".to_string(), "{}: 找到 {} 个结果".to_string());
+    m.insert("search_brief".to_string(), "找到 {} 个结果".to_string());
+    m.insert("search_error_with_engine".to_string(), "{}搜索失败: {}".to_string());
+    m.insert("search_error".to_string(), "搜索失败: {}".to_string());
+
+    // Run command tool messages
+    m.insert("run_command_user_cancelled".to_string(), "用户取消了该操作".to_string());
+    m.insert("run_command_user_rejected".to_string(), "用户拒绝了该操作".to_string());
+    m.insert("run_command_bg_brief".to_string(), "已启动后台命令: {}".to_string());
+    m.insert("run_command_bg_output".to_string(), "命令已在后台启动\n运行 ID: {}\n命令: {}\n\n使用 /runcommand info {{}} 查看状态".to_string());
+    m.insert("run_command_fg_brief".to_string(), "命令已执行: {} (退出码: {})".to_string());
+    m.insert("run_command_fg_output".to_string(), "命令: {}\n退出码: {}\n状态: {}\n\n输出:\n{}".to_string());
+    m.insert("run_command_execute_error".to_string(), "执行命令失败: {}".to_string());
+
     m
 }

@@ -6,6 +6,7 @@ use std::path::Path;
 
 use crate::tools::types::ToolResult;
 use crate::tools::args::FileWriteArgs;
+use crate::ui::get_i18n;
 use super::file_common::{normalize_path, handle_approval_with_details};
 
 pub async fn execute_file_write(
@@ -16,21 +17,22 @@ pub async fn execute_file_write(
     let args: FileWriteArgs = serde_json::from_str(arguments)?;
     
     let target_path = normalize_path(&args.path, working_dir);
+    let i18n = get_i18n();
     
     // 验证 mode 参数
     let mode = args.mode.as_str();
     if mode != "overwrite" && mode != "append" {
-        return Ok(ToolResult::error(format!(
-            "无效的写入模式: {}，只支持 'overwrite' 或 'append'",
-            mode
-        )));
+        let tmpl = i18n.get("file_write_invalid_mode");
+        return Ok(ToolResult::error(tmpl.replace("{}", mode)));
     }
     
     // 处理审批流程
     let action_desc = if mode == "append" {
-        format!("追加到文件: {}", target_path.display())
+        let tmpl = i18n.get("file_write_append_action");
+        tmpl.replace("{}", &target_path.display().to_string())
     } else {
-        format!("覆盖文件: {}", target_path.display())
+        let tmpl = i18n.get("file_write_overwrite_action");
+        tmpl.replace("{}", &target_path.display().to_string())
     };
     
     if let Some(err) = handle_approval_with_details(
@@ -58,6 +60,7 @@ pub async fn execute_file_write(
 }
 
 fn execute_append_mode(target_path: &Path, content: &str) -> Result<ToolResult> {
+    let i18n = crate::ui::get_i18n();
     let mut file = OpenOptions::new()
         .create(true)
         .append(true)
@@ -65,24 +68,29 @@ fn execute_append_mode(target_path: &Path, content: &str) -> Result<ToolResult> 
     file.write_all(content.as_bytes())?;
     
     let file_size = target_path.metadata()?.len();
-    let brief = format!("追加 {} 字节", content.len());
-    let output = format!(
-        "成功追加到文件: {}\n追加: {} 字节\n当前大小: {} 字节",
-        target_path.display(),
-        content.len(),
-        file_size
-    );
+
+    let brief_tmpl = i18n.get("file_write_append_brief");
+    let brief = brief_tmpl.replace("{}", &content.len().to_string());
+
+    let output_tmpl = i18n.get("file_write_append_output");
+    let output = output_tmpl
+        .replacen("{}", &target_path.display().to_string(), 1)
+        .replacen("{}", &content.len().to_string(), 1)
+        .replacen("{}", &file_size.to_string(), 1);
     Ok(ToolResult::ok(brief, output))
 }
 
 fn execute_overwrite_mode(target_path: &Path, content: &str) -> Result<ToolResult> {
     fs::write(target_path, content)?;
-    
-    let brief = format!("写入 {} 字节", content.len());
-    let output = format!(
-        "成功写入文件: {}\n大小: {} 字节",
-        target_path.display(),
-        content.len()
-    );
+
+    let i18n = crate::ui::get_i18n();
+
+    let brief_tmpl = i18n.get("file_write_overwrite_brief");
+    let brief = brief_tmpl.replace("{}", &content.len().to_string());
+
+    let output_tmpl = i18n.get("file_write_overwrite_output");
+    let output = output_tmpl
+        .replacen("{}", &target_path.display().to_string(), 1)
+        .replacen("{}", &content.len().to_string(), 1);
     Ok(ToolResult::ok(brief, output))
 }

@@ -5,6 +5,7 @@ use anyhow::Result;
 use crate::tools::types::ToolResult;
 use crate::tools::types::{is_action_approved, approve_action_for_session};
 use crate::ui::prompt_approval;
+use crate::ui::get_i18n;
 
 /// 规范化路径 - 处理相对路径和绝对路径
 pub fn normalize_path(path_str: &str, working_dir: &Path) -> PathBuf {
@@ -18,22 +19,28 @@ pub fn normalize_path(path_str: &str, working_dir: &Path) -> PathBuf {
 
 /// 验证文件存在
 pub fn verify_file_exists(path: &Path) -> Result<ToolResult> {
+    let i18n = get_i18n();
     if !path.exists() {
-        return Ok(ToolResult::error(format!("文件不存在: {}", path.display())));
+        let tmpl = i18n.get("file_not_exist");
+        return Ok(ToolResult::error(format!("{}", tmpl.replace("{}", &path.display().to_string()))));
     }
     if !path.is_file() {
-        return Ok(ToolResult::error(format!("不是文件: {}", path.display())));
+        let tmpl = i18n.get("file_not_file");
+        return Ok(ToolResult::error(format!("{}", tmpl.replace("{}", &path.display().to_string()))));
     }
     Ok(ToolResult::ok(String::new(), String::new()))
 }
 
 /// 验证目录存在
 pub fn verify_dir_exists(path: &Path) -> Result<ToolResult> {
+    let i18n = get_i18n();
     if !path.exists() {
-        return Ok(ToolResult::error(format!("路径不存在: {}", path.display())));
+        let tmpl = i18n.get("file_path_not_exist");
+        return Ok(ToolResult::error(format!("{}", tmpl.replace("{}", &path.display().to_string()))));
     }
     if !path.is_dir() {
-        return Ok(ToolResult::error(format!("不是目录: {}", path.display())));
+        let tmpl = i18n.get("file_not_directory");
+        return Ok(ToolResult::error(format!("{}", tmpl.replace("{}", &path.display().to_string()))));
     }
     Ok(ToolResult::ok(String::new(), String::new()))
 }
@@ -69,7 +76,8 @@ pub async fn handle_approval_flow(
     ).await?;
 
     if !approved {
-        return Ok(Some("用户拒绝了该操作".to_string()));
+        let i18n = get_i18n();
+        return Ok(Some(i18n.get("approval_user_rejected")));
     }
 
     if always {
@@ -111,12 +119,14 @@ pub async fn handle_approval_with_details(
         )?;
 
         if !continue_operation {
-            return Ok(Some("用户取消了该操作".to_string()));
+            let i18n = get_i18n();
+            return Ok(Some(i18n.get("approval_user_cancelled")));
         }
     }
 
     if !approved {
-        return Ok(Some("用户拒绝了该操作".to_string()));
+        let i18n = get_i18n();
+        return Ok(Some(i18n.get("approval_user_rejected")));
     }
 
     if always {

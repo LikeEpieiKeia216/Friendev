@@ -100,6 +100,57 @@ pub fn get_messages() -> HashMap<String, String> {
     // UI: tool call display
     m.insert("tool_action_used".to_string(), "Used".to_string());
     m.insert("tool_action_using".to_string(), "Using".to_string());
-    
+
+    // Tools & executor messages
+    m.insert("tool_unknown".to_string(), "Unknown tool: {}".to_string());
+
+    m.insert("file_not_exist".to_string(), "File does not exist: {}".to_string());
+    m.insert("file_not_file".to_string(), "Not a file: {}".to_string());
+    m.insert("file_path_not_exist".to_string(), "Path does not exist: {}".to_string());
+    m.insert("file_not_directory".to_string(), "Not a directory: {}".to_string());
+
+    m.insert("file_item_type_dir".to_string(), "DIR".to_string());
+    m.insert("file_item_type_file".to_string(), "FILE".to_string());
+    m.insert("file_item_size_na".to_string(), "-".to_string());
+    m.insert("file_list_item".to_string(), "{} [{}] ({})".to_string());
+    m.insert("file_list_empty".to_string(), "Directory is empty".to_string());
+    m.insert("file_list_brief".to_string(), "Listed {} items".to_string());
+    m.insert("file_list_header".to_string(), "Directory: {}".to_string());
+    m.insert("file_list_count".to_string(), "Total: {} items".to_string());
+
+    m.insert("file_read_brief".to_string(), "Read {} lines, {} bytes".to_string());
+    m.insert("file_read_header".to_string(), "File: {}\nContent:".to_string());
+
+    m.insert("file_write_invalid_mode".to_string(), "Invalid write mode: {}, only 'overwrite' or 'append' are supported".to_string());
+    m.insert("file_write_append_action".to_string(), "Append to file: {}".to_string());
+    m.insert("file_write_overwrite_action".to_string(), "Overwrite file: {}".to_string());
+    m.insert("file_write_append_brief".to_string(), "Appended {} bytes".to_string());
+    m.insert("file_write_append_output".to_string(), "Successfully appended to file: {}\nAppended: {} bytes\nCurrent size: {} bytes".to_string());
+    m.insert("file_write_overwrite_brief".to_string(), "Wrote {} bytes".to_string());
+    m.insert("file_write_overwrite_output".to_string(), "Successfully wrote file: {}\nSize: {} bytes".to_string());
+
+    m.insert("approval_user_rejected".to_string(), "User rejected this operation".to_string());
+    m.insert("approval_user_cancelled".to_string(), "User cancelled this operation".to_string());
+
+    // Search tool messages
+    m.insert("search_engine_prefix".to_string(), "Search engine: {}\n".to_string());
+    m.insert("search_keywords_label".to_string(), "Keywords".to_string());
+    m.insert("search_found_label".to_string(), "Found".to_string());
+    m.insert("search_url_label".to_string(), "URL".to_string());
+    m.insert("search_snippet_label".to_string(), "Snippet".to_string());
+    m.insert("search_brief_with_engine".to_string(), "{}: found {} results".to_string());
+    m.insert("search_brief".to_string(), "Found {} results".to_string());
+    m.insert("search_error_with_engine".to_string(), "{} search failed: {}".to_string());
+    m.insert("search_error".to_string(), "Search failed: {}".to_string());
+
+    // Run command tool messages
+    m.insert("run_command_user_cancelled".to_string(), "User cancelled the operation".to_string());
+    m.insert("run_command_user_rejected".to_string(), "User rejected the operation".to_string());
+    m.insert("run_command_bg_brief".to_string(), "Started background command: {}".to_string());
+    m.insert("run_command_bg_output".to_string(), "Command started in background\nRun ID: {}\nCommand: {}\n\nUse /runcommand info {{}} to check status".to_string());
+    m.insert("run_command_fg_brief".to_string(), "Command executed: {} (exit: {})".to_string());
+    m.insert("run_command_fg_output".to_string(), "Command: {}\nExit code: {}\nStatus: {}\n\nOutput:\n{}".to_string());
+    m.insert("run_command_execute_error".to_string(), "Failed to execute command: {}".to_string());
+
     m
 }

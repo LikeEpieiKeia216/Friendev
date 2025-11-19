@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use crate::tools::types::{ToolResult, is_action_approved, approve_action_for_session};
 use crate::tools::args::RunCommandArgs;
-use crate::ui::prompt_approval;
+use crate::ui::{prompt_approval, get_i18n};
 
 pub async fn execute_run_command(
     arguments: &str,
@@ -36,12 +36,14 @@ pub async fn execute_run_command(
             )?;
             
             if !continue_operation {
-                return Ok(ToolResult::error("User cancelled the operation".to_string()));
+                let i18n = get_i18n();
+                return Ok(ToolResult::error(i18n.get("run_command_user_cancelled")));
             }
         }
         
         if !approved {
-            return Ok(ToolResult::error("User rejected the operation".to_string()));
+            let i18n = get_i18n();
+            return Ok(ToolResult::error(i18n.get("run_command_user_rejected")));
         }
         
         if always {
@@ -144,8 +146,15 @@ async fn execute_background_command(
         }
     });
     
-    let brief = format!("Started background command: {}", run_id);
-    let output = format!("Command started in background\nRun ID: {}\nCommand: {}\n\nUse /runcommand info {{}} to check status", run_id, args.command);
+    let i18n = get_i18n();
+
+    let brief_tmpl = i18n.get("run_command_bg_brief");
+    let brief = brief_tmpl.replace("{}", &run_id);
+
+    let output_tmpl = i18n.get("run_command_bg_output");
+    let output = output_tmpl
+        .replacen("{}", &run_id, 1)
+        .replacen("{}", &args.command, 1);
     
     Ok(ToolResult::ok(brief, output))
 }
@@ -182,14 +191,27 @@ async fn execute_foreground_command(args: RunCommandArgs) -> Result<ToolResult> 
                 stderr
             };
             
-            let brief = format!("Command executed: {} (exit: {})", status, exit_code);
-            let output_text = format!("Command: {}\nExit code: {}\nStatus: {}\n\nOutput:\n{}", args.command, exit_code, status, combined_output);
+            let i18n = get_i18n();
+
+            let brief_tmpl = i18n.get("run_command_fg_brief");
+            let brief = brief_tmpl
+                .replacen("{}", status, 1)
+                .replacen("{}", &exit_code.to_string(), 1);
+
+            let output_tmpl = i18n.get("run_command_fg_output");
+            let output_text = output_tmpl
+                .replacen("{}", &args.command, 1)
+                .replacen("{}", &exit_code.to_string(), 1)
+                .replacen("{}", status, 1)
+                .replacen("{}", &combined_output, 1);
             
             Ok(ToolResult::ok(brief, output_text))
         }
         Err(e) => {
-            let brief = format!("Failed to execute command: {}", e);
-            
+            let i18n = get_i18n();
+            let tmpl = i18n.get("run_command_execute_error");
+            let brief = tmpl.replace("{}", &e.to_string());
+
             Ok(ToolResult::error(brief))
         }
     }
