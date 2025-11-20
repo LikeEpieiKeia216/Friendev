@@ -3,6 +3,7 @@ use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 use super::startup::AppState;
 use super::command_handler;
+use crate::ui::get_i18n;
 
 /// Run the REPL loop
 pub async fn run_repl(mut state: AppState) -> Result<()> {
@@ -23,19 +24,33 @@ pub async fn run_repl(mut state: AppState) -> Result<()> {
 
                 // Handle user input and commands
                 if let Err(e) = command_handler::handle_user_input(line, &mut state).await {
-                    eprintln!("\n\x1b[31m[X] Error:\x1b[0m {}\n", e);
+                    let i18n = get_i18n();
+                    eprintln!(
+                        "\n\x1b[31m[X] {}:\x1b[0m {}\n",
+                        i18n.get("error"),
+                        e
+                    );
                 }
             }
             Err(ReadlineError::Interrupted) => {
-                println!("\n\x1b[33m^C\x1b[0m");
+                println!("\n\x1b[33m^C\x1b[0m"); // 保持 Ctrl+C 标记不做 i18n
                 continue;
             }
             Err(ReadlineError::Eof) => {
-                println!("\n\x1b[36mGoodbye!\x1b[0m\n");
+                let i18n = get_i18n();
+                println!(
+                    "\n\x1b[36m{}\x1b[0m\n",
+                    i18n.get("goodbye")
+                );
                 break;
             }
             Err(err) => {
-                eprintln!("\n\x1b[31m[X] Error:\x1b[0m {}\n", err);
+                let i18n = get_i18n();
+                eprintln!(
+                    "\n\x1b[31m[X] {}:\x1b[0m {}\n",
+                    i18n.get("error"),
+                    err
+                );
                 break;
             }
         }

@@ -6,6 +6,7 @@ use crate::history::Message;
 use crate::security;
 use super::startup::AppState;
 use super::message_builder;
+use crate::ui::get_i18n;
 
 /// Handle user input and command processing
 pub async fn handle_user_input(
@@ -20,7 +21,12 @@ pub async fn handle_user_input(
         } else {
             // Other commands
             if let Err(e) = commands::handle_command(line, &mut state.config, &mut state.session, &mut state.api_client).await {
-                eprintln!("\n\x1b[31m[X] Error:\x1b[0m {}\n", e);
+                let i18n = get_i18n();
+                eprintln!(
+                    "\n\x1b[31m[X] {}:\x1b[0m {}\n",
+                    i18n.get("error"),
+                    e
+                );
             }
         }
         return Ok(());
@@ -28,7 +34,12 @@ pub async fn handle_user_input(
     
     // Security check: intercept suspicious input
     if security::is_input_suspicious(line) {
-        eprintln!("\n\x1b[31m[X] Security Warning:\x1b[0m Input contains forbidden control tokens\n");
+        let i18n = get_i18n();
+        eprintln!(
+            "\n\x1b[31m[X] {}:\x1b[0m {}\n",
+            i18n.get("security_warning_label"),
+            i18n.get("security_forbidden_tokens")
+        );
         return Ok(());
     }
 
@@ -102,7 +113,12 @@ async fn process_chat_loop(state: &mut AppState) -> Result<()> {
                 break;
             }
             Err(e) => {
-                eprintln!("\n\x1b[31m[X] API Error:\x1b[0m {}\n", e);
+                let i18n = get_i18n();
+                eprintln!(
+                    "\n\x1b[31m[X] {}:\x1b[0m {}\n",
+                    i18n.get("api_error"),
+                    e
+                );
                 // Remove last message since no valid response
                 if !state.session.messages.is_empty() {
                     state.session.messages.pop();

@@ -199,5 +199,9 @@ pub fn get_messages() -> HashMap<String, String> {
     m.insert("chat_debug_info_label".to_string(), "调试信息".to_string());
     m.insert("chat_tool_parse_debug".to_string(), "请检查工具参数是否为合法 JSON".to_string());
 
+    // Security messages
+    m.insert("security_warning_label".to_string(), "安全警告".to_string());
+    m.insert("security_forbidden_tokens".to_string(), "输入包含禁止的控制标记".to_string());
+
     m
 }
