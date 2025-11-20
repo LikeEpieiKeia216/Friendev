@@ -203,5 +203,20 @@ pub fn get_messages() -> HashMap<String, String> {
     m.insert("security_warning_label".to_string(), "Security Warning".to_string());
     m.insert("security_forbidden_tokens".to_string(), "Input contains forbidden control tokens".to_string());
 
+    // API messages
+    m.insert("api_retry_label".to_string(), "Retry".to_string());
+    m.insert("api_retry_waiting".to_string(), "waiting".to_string());
+    m.insert("api_retries_failed".to_string(), "All retries failed".to_string());
+    m.insert("api_request_failed".to_string(), "Request failed".to_string());
+    m.insert("api_models_failed".to_string(), "Failed to fetch models list".to_string());
+    m.insert("api_stream_error".to_string(), "Stream error: {}".to_string());
+    m.insert("api_skip_invalid_tool_call".to_string(), "Skipping invalid tool call:".to_string());
+    m.insert("api_skip_invalid_json_args".to_string(), "Skipping tool call with invalid JSON arguments:".to_string());
+    m.insert("api_tool_execution_error".to_string(), "Tool execution error: {}".to_string());
+    m.insert("api_skip_empty_tool_call".to_string(), "Skipping empty tool call:".to_string());
+    m.insert("api_incomplete_json".to_string(), "Incomplete JSON for tool".to_string());
+    m.insert("api_auto_fixed_json".to_string(), "Auto-fixed JSON for tool".to_string());
+    m.insert("api_failed_fix_json".to_string(), "Failed to fix JSON for tool".to_string());
+
     m
 }

@@ -1,5 +1,6 @@
 use crate::history::ToolCall;
 use crate::ui::ToolCallDisplay;
+use crate::ui::get_i18n;
 
 use super::parser::is_json_semantically_complete;
 
@@ -83,14 +84,27 @@ impl ToolCallAccumulator {
             .filter_map(|(id, (name, arguments))| {
                 // Filter out empty tool calls
                 if name.is_empty() || arguments.is_empty() {
-                    eprintln!("\x1b[33m[!] Warning:\x1b[0m Skipping empty tool call: id={}", id);
+                    let i18n = get_i18n();
+                    eprintln!(
+                        "\x1b[33m[!] {}:\x1b[0m {} id={}",
+                        i18n.get("warning"),
+                        i18n.get("api_skip_empty_tool_call"),
+                        id
+                    );
                     return None;
                 }
 
                 // Validate JSON is semantically complete
                 if !is_json_semantically_complete(&name, &arguments) {
                     let preview: String = arguments.chars().take(50).collect();
-                    eprintln!("\x1b[33m[!] Warning:\x1b[0m Incomplete JSON for tool '{}': {}", name, preview);
+                    let i18n = get_i18n();
+                    eprintln!(
+                        "\x1b[33m[!] {}:\x1b[0m {} '{}': {}",
+                        i18n.get("warning"),
+                        i18n.get("api_incomplete_json"),
+                        name,
+                        preview
+                    );
                     return None;
                 }
 
@@ -124,10 +138,23 @@ impl ToolCallAccumulator {
 
                     // 3. Validate fixed JSON
                     if serde_json::from_str::<serde_json::Value>(&fixed).is_ok() {
-                        eprintln!("\x1b[32m[✓] Info:\x1b[0m Auto-fixed JSON for tool '{}' (has_tool_calls={})", name, has_tool_calls);
+                        let i18n = get_i18n();
+                        eprintln!(
+                            "\x1b[32m[✓] {}:\x1b[0m {} '{}' (has_tool_calls={})",
+                            i18n.get("info"),
+                            i18n.get("api_auto_fixed_json"),
+                            name,
+                            has_tool_calls
+                        );
                         fixed
                     } else {
-                        eprintln!("\x1b[31m[✗] Error:\x1b[0m Failed to fix JSON for tool '{}'", name);
+                        let i18n = get_i18n();
+                        eprintln!(
+                            "\x1b[31m[✗] {}:\x1b[0m {} '{}'",
+                            i18n.get("error"),
+                            i18n.get("api_failed_fix_json"),
+                            name
+                        );
                         return None;
                     }
                 } else {

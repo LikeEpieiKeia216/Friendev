@@ -2,6 +2,7 @@ use futures::Stream;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use anyhow::Result;
+use crate::ui::get_i18n;
 
 /// SSE line buffering stream
 /// Correctly handles split JSON data (a single data: line may be split across byte chunks)
@@ -43,7 +44,10 @@ where
                     self.buffer.push_str(&text);
                 }
                 Poll::Ready(Some(Err(e))) => {
-                    return Poll::Ready(Some(Err(anyhow::anyhow!("Stream error: {}", e))));
+                    let i18n = get_i18n();
+                    let tmpl = i18n.get("api_stream_error");
+                    let msg = tmpl.replace("{}", &e.to_string());
+                    return Poll::Ready(Some(Err(anyhow::anyhow!(msg))));
                 }
                 Poll::Ready(None) => {
                     // Stream ended, send remaining buffer data

@@ -3,6 +3,7 @@ use std::path::Path;
 use crate::history::{Message, ToolCall};
 use crate::tools;
 use crate::ui::ToolCallDisplay;
+use crate::ui::get_i18n;
 
 /// Execute tool calls and collect results
 pub async fn execute_tool_calls(
@@ -16,13 +17,26 @@ pub async fn execute_tool_calls(
     for tc in tool_calls {
         // Skip invalid tool calls
         if tc.id.is_empty() || tc.function.name.is_empty() {
-            eprintln!("\x1b[33m[!] Warning:\x1b[0m Skipping invalid tool call: id={}, name={}", tc.id, tc.function.name);
+            let i18n = get_i18n();
+            eprintln!(
+                "\x1b[33m[!] {}:\x1b[0m {} id={}, name={}",
+                i18n.get("warning"),
+                i18n.get("api_skip_invalid_tool_call"),
+                tc.id,
+                tc.function.name
+            );
             continue;
         }
 
         // Validate JSON arguments before execution
         if serde_json::from_str::<serde_json::Value>(&tc.function.arguments).is_err() {
-            eprintln!("\x1b[33m[!] Warning:\x1b[0m Skipping tool call with invalid JSON arguments: {}", tc.function.name);
+            let i18n = get_i18n();
+            eprintln!(
+                "\x1b[33m[!] {}:\x1b[0m {} {}",
+                i18n.get("warning"),
+                i18n.get("api_skip_invalid_json_args"),
+                tc.function.name
+            );
             continue;
         }
 
@@ -33,7 +47,12 @@ pub async fn execute_tool_calls(
             require_approval,
         )
         .await
-        .unwrap_or_else(|e| tools::ToolResult::error(format!("Tool execution error: {}", e)));
+        .unwrap_or_else(|e| {
+            let i18n = get_i18n();
+            let tmpl = i18n.get("api_tool_execution_error");
+            let msg = tmpl.replace("{}", &e.to_string());
+            tools::ToolResult::error(msg)
+        });
 
         // Update UI display
         if let Some(display) = displays.get_mut(&tc.id) {

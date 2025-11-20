@@ -6,6 +6,7 @@ use tokio_stream::Stream;
 use crate::config::Config;
 use crate::history::Message;
 use crate::tools;
+use crate::ui::get_i18n;
 
 use super::stream::SseLineStream;
 use super::parser::parse_sse_line;
@@ -93,9 +94,14 @@ impl ApiClient {
         for attempt in 0..=max_retries {
             if attempt > 0 {
                 let delay = base_delay * (1 << (attempt - 1)); // exponential backoff
+                let i18n = get_i18n();
                 println!(
-                    "\n\x1b[33m[!] Retry {}/{}...waiting {}ms\x1b[0m",
-                    attempt, max_retries, delay
+                    "\n\x1b[33m[!] {} {}/{}...{} {}ms\x1b[0m",
+                    i18n.get("api_retry_label"),
+                    attempt,
+                    max_retries,
+                    i18n.get("api_retry_waiting"),
+                    delay
                 );
                 tokio::time::sleep(tokio::time::Duration::from_millis(delay)).await;
             }
@@ -104,15 +110,25 @@ impl ApiClient {
                 Ok(stream) => return Ok(stream),
                 Err(e) => {
                     if attempt == max_retries {
-                        eprintln!("\n\x1b[31m[X] All retries failed\x1b[0m");
+                        let i18n = get_i18n();
+                        eprintln!(
+                            "\n\x1b[31m[X] {}\x1b[0m",
+                            i18n.get("api_retries_failed")
+                        );
                         return Err(e);
                     }
-                    eprintln!("\n\x1b[33m[!] Request failed: {}\x1b[0m", e);
+                    let i18n = get_i18n();
+                    eprintln!(
+                        "\n\x1b[33m[!] {}: {}\x1b[0m",
+                        i18n.get("api_request_failed"),
+                        e
+                    );
                 }
             }
         }
 
-        Err(anyhow::anyhow!("All retries failed"))
+        let i18n = get_i18n();
+        Err(anyhow::anyhow!(i18n.get("api_retries_failed")))
     }
 
     /// Stream chat completions
@@ -170,7 +186,8 @@ impl ApiClient {
             .await?;
 
         if !response.status().is_success() {
-            anyhow::bail!("Failed to fetch models list");
+            let i18n = get_i18n();
+            anyhow::bail!(i18n.get("api_models_failed"));
         }
 
         let models_response: ModelsResponse = response.json().await?;

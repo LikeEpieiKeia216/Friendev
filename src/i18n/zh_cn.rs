@@ -203,5 +203,20 @@ pub fn get_messages() -> HashMap<String, String> {
     m.insert("security_warning_label".to_string(), "安全警告".to_string());
     m.insert("security_forbidden_tokens".to_string(), "输入包含禁止的控制标记".to_string());
 
+    // API messages
+    m.insert("api_retry_label".to_string(), "重试".to_string());
+    m.insert("api_retry_waiting".to_string(), "等待".to_string());
+    m.insert("api_retries_failed".to_string(), "所有重试均已失败".to_string());
+    m.insert("api_request_failed".to_string(), "请求失败".to_string());
+    m.insert("api_models_failed".to_string(), "获取模型列表失败".to_string());
+    m.insert("api_stream_error".to_string(), "流错误: {}".to_string());
+    m.insert("api_skip_invalid_tool_call".to_string(), "跳过无效的工具调用:".to_string());
+    m.insert("api_skip_invalid_json_args".to_string(), "跳过 JSON 参数无效的工具调用:".to_string());
+    m.insert("api_tool_execution_error".to_string(), "工具执行错误: {}".to_string());
+    m.insert("api_skip_empty_tool_call".to_string(), "跳过空的工具调用:".to_string());
+    m.insert("api_incomplete_json".to_string(), "工具的 JSON 不完整".to_string());
+    m.insert("api_auto_fixed_json".to_string(), "已自动修复工具的 JSON".to_string());
+    m.insert("api_failed_fix_json".to_string(), "修复工具 JSON 失败".to_string());
+
     m
 }
