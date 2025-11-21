@@ -5,7 +5,7 @@ pub mod executor;
 pub mod types;
 pub mod utils;
 
-pub use crate::tools::definitions::get_available_tools;
+pub use self::definitions::get_available_tools;
 pub use command_manager::CommandConfig;
 pub use executor::execute_tool;
 pub use types::{Tool, ToolFunction, ToolResult};

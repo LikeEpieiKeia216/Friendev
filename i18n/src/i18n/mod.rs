@@ -14,6 +14,7 @@ pub use loader::SUPPORTED_LANGUAGES;
 /// Internationalization context storing language and translations
 #[derive(Debug, Clone)]
 pub struct I18n {
+    #[allow(dead_code)]
     language: String,
     messages: HashMap<String, String>,
 }

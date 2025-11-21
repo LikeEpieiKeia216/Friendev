@@ -1,15 +1,4 @@
-mod api;
-mod app;
-mod chat;
-mod commands;
-mod config;
-mod history;
-mod i18n;
-mod prompts;
-mod search_tool;
-mod security;
-mod tools;
-mod ui;
+// moved modules into workspace crates
 
 use anyhow::Result;
 

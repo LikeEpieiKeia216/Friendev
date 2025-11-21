@@ -6,8 +6,8 @@ use std::path::Path;
 
 use super::file_common::{handle_approval_with_details, normalize_path};
 use crate::tools::args::FileWriteArgs;
-use crate::tools::types::ToolResult;
-use crate::ui::get_i18n;
+use crate::types::ToolResult;
+use ui::get_i18n;
 
 pub async fn execute_file_write(
     arguments: &str,
@@ -62,7 +62,7 @@ pub async fn execute_file_write(
 }
 
 fn execute_append_mode(target_path: &Path, content: &str) -> Result<ToolResult> {
-    let i18n = crate::ui::get_i18n();
+    let i18n = ui::get_i18n();
     let mut file = OpenOptions::new()
         .create(true)
         .append(true)
@@ -85,7 +85,7 @@ fn execute_append_mode(target_path: &Path, content: &str) -> Result<ToolResult> 
 fn execute_overwrite_mode(target_path: &Path, content: &str) -> Result<ToolResult> {
     fs::write(target_path, content)?;
 
-    let i18n = crate::ui::get_i18n();
+    let i18n = ui::get_i18n();
 
     let brief_tmpl = i18n.get("file_write_overwrite_brief");
     let brief = brief_tmpl.replace("{}", &content.len().to_string());

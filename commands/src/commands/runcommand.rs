@@ -1,11 +1,11 @@
 use anyhow::Result;
-
-use crate::i18n::I18n;
+use tools::CommandConfig;
+use i18n::I18n;
 
 /// Handle /runcommand command
 pub fn handle_run_command_command(parts: &[&str], i18n: &I18n) -> Result<()> {
     match parts.get(1) {
-        Some(&"list") => match crate::tools::command_manager::CommandConfig::load() {
+        Some(&"list") => match CommandConfig::load() {
             Ok(config) => {
                 let commands = config.list_always_approve_commands();
 
@@ -30,7 +30,7 @@ pub fn handle_run_command_command(parts: &[&str], i18n: &I18n) -> Result<()> {
         },
         Some(&"add") => {
             if let Some(cmd) = parts.get(2) {
-                let mut config = match crate::tools::command_manager::CommandConfig::load() {
+                let mut config = match CommandConfig::load() {
                     Ok(c) => c,
                     Err(e) => {
                         eprintln!(
@@ -63,7 +63,7 @@ pub fn handle_run_command_command(parts: &[&str], i18n: &I18n) -> Result<()> {
         }
         Some(&"del") | Some(&"remove") => {
             if let Some(cmd) = parts.get(2) {
-                let mut config = match crate::tools::command_manager::CommandConfig::load() {
+                let mut config = match CommandConfig::load() {
                     Ok(c) => c,
                     Err(e) => {
                         eprintln!(
@@ -96,7 +96,7 @@ pub fn handle_run_command_command(parts: &[&str], i18n: &I18n) -> Result<()> {
         }
         Some(&"info") => {
             if let Some(id_str) = parts.get(2) {
-                match crate::tools::command_manager::CommandConfig::load() {
+                match CommandConfig::load() {
                     Ok(config) => {
                         if let Some(cmd) = config.get_background_command(id_str) {
                             println!("\n\x1b[1;33m{}:\x1b[0m", i18n.get("runcommand_info_header"));

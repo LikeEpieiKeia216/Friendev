@@ -1,7 +1,7 @@
 use colored::Colorize;
 use std::io::{self, Write};
 
-use crate::ui::get_i18n;
+use super::get_i18n;
 
 /// UI 组件，用于展示工具调用的流式进度
 #[derive(Clone)]
@@ -110,16 +110,16 @@ pub fn extract_key_argument(tool_name: &str, arguments: &str) -> Option<String> 
         "file_read" | "file_write" => json
             .get("path")
             .and_then(|v| v.as_str())
-            .map(|s| normalize_path(s)),
+            .map(normalize_path),
         "file_list" => json
             .get("path")
             .and_then(|v| v.as_str())
-            .map(|s| normalize_path(s))
+            .map(normalize_path)
             .or_else(|| Some("./".to_string())),
         _ => None,
     };
 
-    key.map(|s| shorten_middle(&s, 50))
+    key.map(|s| shorten_middle(s.as_str(), 50))
 }
 
 /// 规范化路径显示（简化为相对路径）

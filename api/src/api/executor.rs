@@ -1,9 +1,9 @@
 use std::path::Path;
 
-use crate::history::{Message, ToolCall};
-use crate::tools;
-use crate::ui::get_i18n;
-use crate::ui::ToolCallDisplay;
+use history::{Message, ToolCall};
+use tools;
+use ui::get_i18n;
+use ui::ToolCallDisplay;
 
 /// Execute tool calls and collect results
 pub async fn execute_tool_calls(

@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use crate::tools;
+use tools;
 
 /// Chat request to be sent to the API
 #[derive(Debug, Serialize)]
 pub struct ChatRequest {
     pub model: String,
-    pub messages: Vec<crate::history::Message>,
+    pub messages: Vec<history::Message>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub tools: Vec<tools::Tool>,
     pub stream: bool,

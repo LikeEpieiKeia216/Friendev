@@ -1,9 +1,9 @@
 use super::command_handler;
 use super::startup::AppState;
-use crate::ui::get_i18n;
 use anyhow::Result;
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
+use ui::get_i18n;
 
 /// Run the REPL loop
 pub async fn run_repl(mut state: AppState) -> Result<()> {

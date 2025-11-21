@@ -6,7 +6,7 @@ use std::path::Path;
 use super::super::utils::normalize_whitespace;
 use super::file_common::{handle_approval_with_details, normalize_path};
 use crate::tools::args::FileReplaceArgs;
-use crate::tools::types::ToolResult;
+use crate::types::ToolResult;
 
 pub async fn execute_file_replace(
     arguments: &str,
@@ -282,7 +282,7 @@ fn generate_error_diagnostics(failed_edits: &[(usize, String)], content: &str) -
         // 尝试找相似的内容作为建议
         let mut suggestions = Vec::new();
         for line in content.lines() {
-            if line.contains(&search_str.trim()) {
+            if line.contains(search_str.trim()) {
                 suggestions.push(line);
             }
         }

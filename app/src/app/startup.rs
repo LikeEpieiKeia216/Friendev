@@ -1,9 +1,9 @@
-use crate::api::ApiClient;
-use crate::config::Config;
-use crate::history::ChatSession;
-use crate::i18n::I18n;
-use crate::prompts;
 use anyhow::Result;
+use api::ApiClient;
+use config::Config;
+use history::ChatSession;
+use i18n::I18n;
+use prompts;
 use std::env;
 
 /// Application startup state

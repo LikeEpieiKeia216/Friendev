@@ -1,6 +1,6 @@
 use super::output_formatter;
-use crate::api::{StreamChunk, ToolCallAccumulator};
 use anyhow::Result;
+use api::{StreamChunk, ToolCallAccumulator};
 use futures::StreamExt;
 
 /// Process stream chunks and handle output

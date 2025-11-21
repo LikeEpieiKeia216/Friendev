@@ -1,0 +1,19 @@
+[package]
+name = "search_tool"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+scraper = "0.19"
+regex = "1.10"
+url = "2.5"
+termimad = "0.28"
+html-escape = "0.2"
+urlencoding = "2.1"
+ui = { path = "../ui" }
+serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros","rt"] }

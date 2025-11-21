@@ -1,0 +1,12 @@
+[package]
+name = "chat"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+futures = "0.3"
+
+api = { path = "../api" }
+history = { path = "../history" }
+ui = { path = "../ui" }

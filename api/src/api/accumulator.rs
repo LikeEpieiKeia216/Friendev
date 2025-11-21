@@ -1,6 +1,6 @@
-use crate::history::ToolCall;
-use crate::ui::get_i18n;
-use crate::ui::ToolCallDisplay;
+use history::ToolCall;
+use ui::get_i18n;
+use ui::ToolCallDisplay;
 
 use super::parser::is_json_semantically_complete;
 
@@ -67,7 +67,7 @@ impl ToolCallAccumulator {
             // Try to extract key argument and update UI
             if let Some(display) = self.displays.get_mut(&key) {
                 let tool_name = &entry.0;
-                if let Some(arg) = crate::ui::extract_key_argument(tool_name, &entry.1) {
+                if let Some(arg) = ui::extract_key_argument(tool_name, &entry.1) {
                     display.update_argument(arg);
                 }
                 display.render_streaming();
@@ -169,12 +169,18 @@ impl ToolCallAccumulator {
                 Some(ToolCall {
                     id,
                     tool_type: "function".to_string(),
-                    function: crate::history::FunctionCall {
+                    function: history::FunctionCall {
                         name,
                         arguments: fixed_arguments,
                     },
                 })
             })
             .collect()
+    }
+}
+
+impl Default for ToolCallAccumulator {
+    fn default() -> Self {
+        Self::new()
     }
 }

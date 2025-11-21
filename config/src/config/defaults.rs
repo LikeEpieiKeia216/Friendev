@@ -8,7 +8,7 @@ pub fn default_retry_delay_ms() -> u64 {
     300
 }
 
-use crate::i18n::SUPPORTED_LANGUAGES;
+use i18n::SUPPORTED_LANGUAGES;
 
 /// Default UI language (first supported language)
 pub fn default_ui_language() -> String {

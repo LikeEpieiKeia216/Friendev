@@ -1,8 +1,8 @@
 use super::persistence::{list_all_sessions, session_path};
 use super::session::ChatSession;
-use crate::ui::get_i18n;
 use anyhow::Result;
 use std::fs;
+use ui::get_i18n;
 
 /// Delete a session
 pub fn delete_session(session: &ChatSession) -> Result<()> {

@@ -1,7 +1,7 @@
 use colored::Colorize;
 use std::io::{self, Write};
 
-use crate::ui::get_i18n;
+use super::get_i18n;
 
 /// 用户审批提示
 /// 返回 (approved, always, view_details)

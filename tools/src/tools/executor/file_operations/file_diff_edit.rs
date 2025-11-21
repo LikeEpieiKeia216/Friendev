@@ -4,7 +4,7 @@ use std::path::Path;
 
 use super::file_common::{handle_approval_with_details, normalize_path};
 use crate::tools::args::FileDiffEditArgs;
-use crate::tools::types::ToolResult;
+use crate::types::ToolResult;
 
 pub async fn execute_file_diff_edit(
     arguments: &str,
@@ -208,7 +208,7 @@ fn generate_diff_result(actual_lines: &[&str], modified_ranges: &[(usize, usize)
                 ));
             }
         }
-        diff_merge_result.push_str("\n");
+        diff_merge_result.push('\n');
     }
 
     diff_merge_result

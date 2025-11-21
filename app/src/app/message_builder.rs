@@ -1,7 +1,7 @@
-use crate::config::Config;
-use crate::history::{ChatSession, Message};
-use crate::prompts;
 use anyhow::Result;
+use config::Config;
+use history::{ChatSession, Message};
+use prompts;
 
 /// Build message sequence with SYSTEM prompt and history
 /// AGENTS.md is integrated in the system prompt (loaded in real-time)

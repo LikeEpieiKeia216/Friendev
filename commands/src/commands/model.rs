@@ -1,8 +1,8 @@
 use anyhow::Result;
 
-use crate::api::ApiClient;
-use crate::config::Config;
-use crate::i18n::I18n;
+use api::ApiClient;
+use config::Config;
+use i18n::I18n;
 
 /// Handle /model command
 pub async fn handle_model_command(

@@ -1,10 +1,10 @@
 use super::output_formatter;
 use super::stream_handler;
-use crate::api::ApiClient;
-use crate::history::{ChatSession, Message};
-use crate::ui::ToolCallDisplay;
 use anyhow::Result;
+use api::ApiClient;
+use history::{ChatSession, Message};
 use std::collections::HashMap;
+use ui::ToolCallDisplay;
 
 /// Send messages to AI and receive response
 pub async fn send_and_receive(
@@ -13,7 +13,7 @@ pub async fn send_and_receive(
     _session: &ChatSession,
 ) -> Result<(
     Message,
-    Option<Vec<crate::history::ToolCall>>,
+    Option<Vec<history::ToolCall>>,
     HashMap<String, ToolCallDisplay>,
 )> {
     // Use streaming request with retry

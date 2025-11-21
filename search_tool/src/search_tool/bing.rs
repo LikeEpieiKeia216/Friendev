@@ -1,9 +1,9 @@
 use super::html_parser::clean_html;
 use super::types::SearchResult;
-use crate::ui::get_i18n;
 use anyhow::{anyhow, Result};
 use reqwest::Client;
 use scraper::{Html, Selector};
+use ui::get_i18n;
 
 /// Search using Bing
 pub async fn search_bing(

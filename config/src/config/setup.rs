@@ -1,8 +1,8 @@
 use super::defaults;
 use super::persistence;
 use super::types::Config;
-use crate::i18n::{I18n, SUPPORTED_LANGUAGES};
 use anyhow::Result;
+use i18n::{I18n, SUPPORTED_LANGUAGES};
 
 /// Initialize configuration through interactive prompts
 pub fn initialize_config() -> Result<Config> {
@@ -16,7 +16,7 @@ pub fn initialize_config() -> Result<Config> {
     let ui_language_idx = dialoguer::Select::new()
         .with_prompt(i18n.get("setup_ui_language"))
         .default(0)
-        .items(&SUPPORTED_LANGUAGES)
+        .items(SUPPORTED_LANGUAGES)
         .interact()?;
     let ui_language = SUPPORTED_LANGUAGES[ui_language_idx].to_string();
 

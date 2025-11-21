@@ -1,8 +1,8 @@
 use anyhow::Result;
 
 use crate::tools::args::RunCommandArgs;
-use crate::tools::types::{approve_action_for_session, is_action_approved, ToolResult};
-use crate::ui::{get_i18n, prompt_approval};
+use crate::types::{approve_action_for_session, is_action_approved, ToolResult};
+use ui::{get_i18n, prompt_approval};
 
 pub async fn execute_run_command(arguments: &str, require_approval: bool) -> Result<ToolResult> {
     let args: RunCommandArgs = serde_json::from_str(arguments)?;
@@ -19,7 +19,7 @@ pub async fn execute_run_command(arguments: &str, require_approval: bool) -> Res
 
         let (approved, always, view_details) = prompt_approval(
             "RunCommand",
-            &format!("{}", args.command),
+            &args.command.to_string(),
             Some(&format!(
                 "Command: {}\nMode: {}",
                 main_command,
@@ -32,7 +32,7 @@ pub async fn execute_run_command(arguments: &str, require_approval: bool) -> Res
         )?;
 
         if view_details {
-            let continue_operation = crate::ui::show_detailed_content(
+            let continue_operation = ui::show_detailed_content(
                 "RunCommand",
                 &format!("Command: {}", args.command),
                 &format!(

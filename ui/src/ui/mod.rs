@@ -2,8 +2,8 @@ mod approval_prompt;
 mod spinner;
 mod tool_call_display;
 
-use crate::config::Config;
-use crate::i18n::I18n;
+use config::Config;
+use i18n::I18n;
 
 // 重新导出主要的公共 API
 pub use approval_prompt::{prompt_approval, show_detailed_content};

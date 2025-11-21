@@ -1,6 +1,6 @@
 use super::session::ChatSession;
-use crate::config::Config;
 use anyhow::Result;
+use config::Config;
 use std::fs;
 use std::path::PathBuf;
 use uuid::Uuid;

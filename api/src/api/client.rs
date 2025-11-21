@@ -3,10 +3,10 @@ use futures::StreamExt;
 use reqwest::Client;
 use tokio_stream::Stream;
 
-use crate::config::Config;
-use crate::history::Message;
-use crate::tools;
-use crate::ui::get_i18n;
+use config::Config;
+use history::Message;
+use tools;
+use ui::get_i18n;
 
 use super::parser::parse_sse_line;
 use super::stream::SseLineStream;
@@ -43,14 +43,14 @@ impl ApiClient {
                     tool_calls.iter().map(|tc| tc.id.clone()).collect();
 
                 let mut has_responses = std::collections::HashSet::new();
-                for j in (i + 1)..messages.len() {
-                    if messages[j].role == "tool" {
-                        if let Some(tool_call_id) = &messages[j].tool_call_id {
+                for msg in messages.iter().skip(i + 1) {
+                    if msg.role == "tool" {
+                        if let Some(tool_call_id) = &msg.tool_call_id {
                             if tool_call_ids.contains(tool_call_id) {
                                 has_responses.insert(tool_call_id.clone());
                             }
                         }
-                    } else if messages[j].role != "tool" {
+                    } else if msg.role != "tool" {
                         break;
                     }
                 }

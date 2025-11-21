@@ -4,7 +4,22 @@ version = "0.1.3"
 edition = "2021"
 
 [workspace]
-members = [".", "agents"]
+members = [
+    ".",
+    "agents",
+    "commands",
+    "api",
+    "app",
+    "chat",
+    "config",
+    "history",
+    "i18n",
+    "search_tool",
+    "tools",
+    "ui",
+    "security",
+    "prompts",
+]
 
 [dependencies]
 # 核心依赖
@@ -54,3 +69,14 @@ html-escape = "0.2"                   # HTML实体解码
 urlencoding = "2.1"                   # URL编码
 ignore = "0.4"                        # .gitignore 规则正确处理
 agents = { path = "agents" }
+commands = { path = "commands" }
+app = { path = "app" }
+api = { path = "api" }
+chat = { path = "chat" }
+config = { path = "config" }
+history = { path = "history" }
+i18n = { path = "i18n" }
+prompts = { path = "prompts" }
+security = { path = "security" }
+tools = { path = "tools" }
+ui = { path = "ui" }

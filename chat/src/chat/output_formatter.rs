@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use crate::ui::get_i18n;
+use ui::get_i18n;
 
 /// Handle content output
 pub fn print_content(text: &str, has_reasoning: &mut bool) -> std::io::Result<()> {
@@ -47,7 +47,7 @@ pub fn print_tool_call_separator() -> std::io::Result<()> {
 pub fn finalize_output(has_reasoning: bool, content_empty: bool) -> std::io::Result<()> {
     // Ensure color is reset at the end and newline
     if has_reasoning {
-        print!("\x1b[0m\n");
+        println!("\x1b[0m");
     } else if !content_empty {
         // If there's normal output, newline
         println!();

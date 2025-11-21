@@ -1,5 +1,5 @@
-use crate::i18n::I18n;
 use colored::Colorize;
+use i18n::I18n;
 
 /// Print help information
 pub fn print_help(i18n: &I18n) {

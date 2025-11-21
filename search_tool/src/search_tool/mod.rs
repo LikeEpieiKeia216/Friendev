@@ -41,6 +41,12 @@ impl SearchClient {
     }
 }
 
+impl Default for SearchClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

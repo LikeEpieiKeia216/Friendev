@@ -24,8 +24,7 @@ pub fn analyze_project_structure(working_dir: &Path) -> Result<String> {
     let mut entries: Vec<_> = vec![];
 
     // Collect top-level files and directories
-    for result in walker {
-        if let Ok(entry) = result {
+    for entry in walker.flatten() {
             let path = entry.path();
 
             // Skip the parent directory itself
@@ -40,7 +39,6 @@ pub fn analyze_project_structure(working_dir: &Path) -> Result<String> {
             }
 
             entries.push(path.to_path_buf());
-        }
     }
 
     entries.sort();

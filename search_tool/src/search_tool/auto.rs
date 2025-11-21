@@ -2,8 +2,8 @@ use super::bing;
 use super::client::create_client;
 use super::duckduckgo;
 use super::types::SearchResult;
-use crate::ui::get_i18n;
 use anyhow::Result;
+use ui::get_i18n;
 
 /// Graceful fallback search: try DuckDuckGo first, fall back to Bing
 pub async fn search_auto(keywords: &str, max_results: usize) -> Result<Vec<SearchResult>> {

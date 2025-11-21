@@ -1,7 +1,7 @@
 use anyhow::Result;
 
-use crate::config::Config;
-use crate::i18n::{is_language_supported, supported_languages_str, I18n};
+use config::Config;
+use i18n::{is_language_supported, supported_languages_str, I18n};
 
 /// Handle /language command
 pub fn handle_language_command(parts: &[&str], config: &mut Config, i18n: &I18n) -> Result<()> {

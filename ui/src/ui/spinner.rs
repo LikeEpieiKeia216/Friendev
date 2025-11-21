@@ -26,3 +26,9 @@ impl Spinner {
         io::stdout().flush().ok();
     }
 }
+
+impl Default for Spinner {
+    fn default() -> Self {
+        Self::new()
+    }
+}

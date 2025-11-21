@@ -1,12 +1,12 @@
 use super::message_builder;
 use super::startup::AppState;
-use crate::api;
-use crate::chat;
-use crate::commands;
-use crate::history::Message;
-use crate::security;
-use crate::ui::get_i18n;
 use anyhow::Result;
+use api;
+use chat;
+use commands;
+use history::Message;
+use security;
+use ui::get_i18n;
 
 /// Handle user input and command processing
 pub async fn handle_user_input(line: &str, state: &mut AppState) -> Result<()> {

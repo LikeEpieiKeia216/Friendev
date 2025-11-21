@@ -1,10 +1,10 @@
-use crate::tools::types::ToolResult;
-use crate::ui::get_i18n;
+use crate::types::ToolResult;
+use ui::get_i18n;
 
 /// Format search results into a readable output
 pub fn format_search_results(
     keywords: &str,
-    results: &[crate::search_tool::SearchResult],
+    results: &[search_tool::SearchResult],
     engine_name: Option<&str>,
 ) -> String {
     let i18n = get_i18n();
@@ -56,7 +56,7 @@ pub fn generate_brief(count: usize, engine_name: Option<&str>) -> String {
 /// Create a successful search result
 pub fn create_search_result(
     keywords: &str,
-    results: &[crate::search_tool::SearchResult],
+    results: &[search_tool::SearchResult],
     engine_name: Option<&str>,
 ) -> ToolResult {
     let brief = generate_brief(results.len(), engine_name);

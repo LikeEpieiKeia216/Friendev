@@ -1,0 +1,15 @@
+[package]
+name = "commands"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+colored = "2.1"
+agents = { path = "../agents" }
+api = { path = "../api" }
+config = { path = "../config" }
+history = { path = "../history" }
+i18n = { path = "../i18n" }
+tools = { path = "../tools" }
+uuid = { version = "1", features = ["v4"] }

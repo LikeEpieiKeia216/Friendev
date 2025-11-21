@@ -1,11 +1,11 @@
 use super::management;
 use super::persistence;
 use super::types::Message;
-use crate::ui::get_i18n;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use ui::get_i18n;
 use uuid::Uuid;
 
 /// Chat session containing messages and metadata

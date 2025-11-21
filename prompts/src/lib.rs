@@ -1,9 +1,9 @@
 use colored::Colorize;
 use std::path::Path;
 
-use crate::config::Config;
-use crate::i18n::I18n;
 use agents::load_agents_md;
+use config::Config;
+use i18n::I18n;
 
 pub fn print_welcome(config: &Config, i18n: &I18n) {
     // ASCII Art Logo
@@ -169,7 +169,7 @@ pub fn print_help(i18n: &I18n) {
 }
 
 pub fn get_system_prompt(language: &str, model: &str, working_dir: &Path) -> String {
-    let tools_description = crate::tools::get_tools_description();
+    let tools_description = tools::get_tools_description();
 
     // 动态加载 AGENTS.md（如果存在）
     let agents_context = match load_agents_md(working_dir) {

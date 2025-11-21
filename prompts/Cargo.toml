@@ -1,0 +1,12 @@
+[package]
+name = "prompts"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+colored = "2.1"
+
+config = { path = "../config" }
+i18n = { path = "../i18n" }
+agents = { path = "../agents" }
+tools = { path = "../tools" }

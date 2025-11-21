@@ -7,10 +7,10 @@ mod runcommand;
 
 use anyhow::Result;
 
-use crate::api::ApiClient;
-use crate::config::Config;
-use crate::history::ChatSession;
-use crate::i18n::I18n;
+use api::ApiClient;
+use config::Config;
+use ::history::ChatSession;
+use i18n::I18n;
 
 pub use agents::handle_agents_md_command;
 pub use help::print_help;
@@ -25,7 +25,7 @@ pub async fn handle_command(
     let parts: Vec<&str> = command.split_whitespace().collect();
     let i18n = I18n::new(&config.ui_language);
 
-    match parts.get(0) {
+    match parts.first() {
         Some(&"/exit") => {
             println!("\n\x1b[36m{}\x1b[0m\n", i18n.get("goodbye"));
             std::process::exit(0);

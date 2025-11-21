@@ -1,7 +1,7 @@
 use super::persistence;
 use super::types::Config;
-use crate::i18n::{is_language_supported, supported_languages_str};
 use anyhow::{anyhow, Result};
+use i18n::{is_language_supported, supported_languages_str};
 
 /// Update the current model
 pub fn update_model(config: &mut Config, model: String) -> Result<()> {

@@ -1,8 +1,8 @@
 use anyhow::Result;
 
-use crate::history::ChatSession;
-use crate::i18n::I18n;
 use agents::generate_agents_analysis_prompt;
+use history::ChatSession;
+use i18n::I18n;
 
 /// Handle /agents.md command - returns prompt (auto-sent to AI by main.rs)
 pub async fn handle_agents_md_command(session: &ChatSession, i18n: &I18n) -> Result<String> {
