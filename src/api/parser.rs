@@ -41,10 +41,14 @@ pub fn parse_sse_message(data: &str) -> Option<Result<StreamChunk>> {
                     if let Some(tool_calls) = &delta.tool_calls {
                         for tc in tool_calls {
                             let id = tc.id.as_deref().unwrap_or("");
-                            let name = tc.function.as_ref()
+                            let name = tc
+                                .function
+                                .as_ref()
                                 .and_then(|f| f.name.as_deref())
                                 .unwrap_or("");
-                            let args = tc.function.as_ref()
+                            let args = tc
+                                .function
+                                .as_ref()
                                 .and_then(|f| f.arguments.as_deref())
                                 .unwrap_or("");
 
@@ -137,7 +141,8 @@ pub fn is_json_semantically_complete(tool_name: &str, arguments: &str) -> bool {
         }
         "file_write" => {
             // path parameter required
-            let has_path = obj.get("path")
+            let has_path = obj
+                .get("path")
                 .and_then(|v| v.as_str())
                 .map(|s| !s.is_empty())
                 .unwrap_or(false);
@@ -154,12 +159,14 @@ pub fn is_json_semantically_complete(tool_name: &str, arguments: &str) -> bool {
         }
         "file_replace" => {
             // path and edits parameters required
-            let has_path = obj.get("path")
+            let has_path = obj
+                .get("path")
                 .and_then(|v| v.as_str())
                 .map(|s| !s.is_empty())
                 .unwrap_or(false);
 
-            let has_edits = obj.get("edits")
+            let has_edits = obj
+                .get("edits")
                 .and_then(|v| v.as_array())
                 .map(|arr| !arr.is_empty())
                 .unwrap_or(false);

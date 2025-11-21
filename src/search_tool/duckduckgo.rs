@@ -1,13 +1,20 @@
+use super::html_parser::clean_html;
+use super::types::SearchResult;
+use crate::ui::get_i18n;
 use anyhow::{anyhow, Result};
 use reqwest::Client;
 use scraper::{Html, Selector};
-use super::types::SearchResult;
-use super::html_parser::clean_html;
-use crate::ui::get_i18n;
 
 /// Search using DuckDuckGo
-pub async fn search_duckduckgo(client: &Client, keywords: &str, max_results: usize) -> Result<Vec<SearchResult>> {
-    let url = format!("https://html.duckduckgo.com/html?q={}", urlencoding::encode(keywords));
+pub async fn search_duckduckgo(
+    client: &Client,
+    keywords: &str,
+    max_results: usize,
+) -> Result<Vec<SearchResult>> {
+    let url = format!(
+        "https://html.duckduckgo.com/html?q={}",
+        urlencoding::encode(keywords)
+    );
 
     let response = client
         .get(&url)
@@ -36,9 +43,8 @@ fn parse_duckduckgo_html(html: &str, max_results: usize) -> Result<Vec<SearchRes
     // or in div.links_main under div[class~="result"]
     let selector = match Selector::parse("div.results div[class~='result']") {
         Ok(s) => s,
-        Err(_) => Selector::parse("div.results > article").unwrap_or_else(|_| {
-            Selector::parse("div[class*='result']").unwrap()
-        }),
+        Err(_) => Selector::parse("div.results > article")
+            .unwrap_or_else(|_| Selector::parse("div[class*='result']").unwrap()),
     };
 
     for element in document.select(&selector).take(max_results) {
@@ -79,10 +85,7 @@ fn parse_duckduckgo_html(html: &str, max_results: usize) -> Result<Vec<SearchRes
 
     if results.is_empty() {
         let i18n = get_i18n();
-        return Err(anyhow!(
-            "{}",
-            i18n.get("search_ddg_no_results")
-        ));
+        return Err(anyhow!("{}", i18n.get("search_ddg_no_results")));
     }
 
     Ok(results)

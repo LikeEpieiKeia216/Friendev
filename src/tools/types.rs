@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
 use std::collections::HashSet;
+use std::sync::Mutex;
 
 /// 会话级审批状态
 static APPROVED_ACTIONS: Mutex<Option<HashSet<String>>> = Mutex::new(None);
@@ -34,9 +34,9 @@ pub struct ToolResult {
 
 impl ToolResult {
     pub fn ok(brief: String, output: String) -> Self {
-        Self { 
-            success: true, 
-            brief, 
+        Self {
+            success: true,
+            brief,
             message: output,
             verification_required: false,
             verification_message: None,
@@ -44,9 +44,9 @@ impl ToolResult {
     }
 
     pub fn error(brief: String) -> Self {
-        Self { 
-            success: false, 
-            brief: brief.clone(), 
+        Self {
+            success: false,
+            brief: brief.clone(),
             message: brief,
             verification_required: false,
             verification_message: None,

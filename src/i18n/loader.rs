@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use super::{en_us, zh_cn};
+use std::collections::HashMap;
 
 /// Define supported languages and their message loaders
 /// This macro ensures SUPPORTED_LANGUAGES and load_messages stay in sync
@@ -34,4 +34,3 @@ pub fn is_language_supported(language: &str) -> bool {
 pub fn supported_languages_str() -> String {
     SUPPORTED_LANGUAGES.join(", ")
 }
-

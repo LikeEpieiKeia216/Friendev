@@ -26,7 +26,11 @@ pub async fn handle_model_command(
                     }
                     println!();
                 }
-                Err(e) => eprintln!("\n\x1b[31m[X] {}:\x1b[0m {}", i18n.get("failed_load_models"), e),
+                Err(e) => eprintln!(
+                    "\n\x1b[31m[X] {}:\x1b[0m {}",
+                    i18n.get("failed_load_models"),
+                    e
+                ),
             }
         }
         Some(&"switch") => {
@@ -34,15 +38,28 @@ pub async fn handle_model_command(
                 config.update_model(model_name.to_string())?;
                 // Recreate API client with new model
                 *api_client = ApiClient::new(config.clone());
-                println!("\n\x1b[32m[OK]\x1b[0m {} \x1b[1m{}\x1b[0m\n", i18n.get("switched_model"), model_name);
+                println!(
+                    "\n\x1b[32m[OK]\x1b[0m {} \x1b[1m{}\x1b[0m\n",
+                    i18n.get("switched_model"),
+                    model_name
+                );
             } else {
-                println!("\n\x1b[33m[!] {}:\x1b[0m /model switch <model_name>\n", i18n.get("usage"));
+                println!(
+                    "\n\x1b[33m[!] {}:\x1b[0m /model switch <model_name>\n",
+                    i18n.get("usage")
+                );
             }
         }
         _ => {
             println!("\n\x1b[33m[?] {}:\x1b[0m", i18n.get("help_model"));
-            println!("    \x1b[36m/model\x1b[0m list          {}", i18n.get("cmd_model_list"));
-            println!("    \x1b[36m/model\x1b[0m switch <name> {}\n", i18n.get("cmd_model_switch"));
+            println!(
+                "    \x1b[36m/model\x1b[0m list          {}",
+                i18n.get("cmd_model_list")
+            );
+            println!(
+                "    \x1b[36m/model\x1b[0m switch <name> {}\n",
+                i18n.get("cmd_model_switch")
+            );
         }
     }
     Ok(())

@@ -1,11 +1,11 @@
-mod types;
-mod stream;
-mod parser;
 mod accumulator;
-mod executor;
 mod client;
+mod executor;
+mod parser;
+mod stream;
+mod types;
 
-pub use types::StreamChunk;
 pub use accumulator::ToolCallAccumulator;
-pub use executor::execute_tool_calls;
 pub use client::ApiClient;
+pub use executor::execute_tool_calls;
+pub use types::StreamChunk;

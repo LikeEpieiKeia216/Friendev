@@ -1,51 +1,57 @@
+use super::gitattributes::{is_binary_file, load_gitattributes};
 use anyhow::Result;
-use std::path::Path;
 use ignore::WalkBuilder;
-use super::gitattributes::{load_gitattributes, is_binary_file};
+use std::path::Path;
 
 /// Analyze project structure respecting .gitignore and .gitattributes
 pub fn analyze_project_structure(working_dir: &Path) -> Result<String> {
     let mut structure = String::new();
-    structure.push_str("Project directory structure (respecting .gitignore and .gitattributes):\n\n```\n");
-    
+    structure.push_str(
+        "Project directory structure (respecting .gitignore and .gitattributes):\n\n```\n",
+    );
+
     // Load binary file markers from .gitattributes
     let binary_files = load_gitattributes(working_dir);
-    
+
     // Use ignore crate to properly handle .gitignore
     let walker = WalkBuilder::new(working_dir)
         .git_ignore(true)
         .git_global(false)
         .git_exclude(false)
-        .standard_filters(false)  // Don't use basic filters, let ignore handle .git etc
+        .standard_filters(false) // Don't use basic filters, let ignore handle .git etc
         .build();
-    
+
     let mut entries: Vec<_> = vec![];
-    
+
     // Collect top-level files and directories
     for result in walker {
         if let Ok(entry) = result {
             let path = entry.path();
-            
+
             // Skip the parent directory itself
             if path == working_dir {
                 continue;
             }
-            
+
             // Skip non-direct children (depth > 1)
             let relative_path = path.strip_prefix(working_dir).unwrap_or(path);
             if relative_path.components().count() > 1 {
                 continue;
             }
-            
+
             entries.push(path.to_path_buf());
         }
     }
-    
+
     entries.sort();
-    
+
     for path in entries {
-        let file_name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
-        
+        let file_name = path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
+
         if path.is_dir() {
             structure.push_str(&format!("{}/ (directory)\n", file_name));
         } else {
@@ -58,7 +64,7 @@ pub fn analyze_project_structure(working_dir: &Path) -> Result<String> {
             }
         }
     }
-    
+
     structure.push_str("```\n");
     Ok(structure)
 }

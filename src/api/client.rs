@@ -8,9 +8,9 @@ use crate::history::Message;
 use crate::tools;
 use crate::ui::get_i18n;
 
-use super::stream::SseLineStream;
 use super::parser::parse_sse_line;
-use super::types::{ChatRequest, StreamChunk, ModelsResponse};
+use super::stream::SseLineStream;
+use super::types::{ChatRequest, ModelsResponse, StreamChunk};
 
 pub struct ApiClient {
     client: Client,
@@ -111,10 +111,7 @@ impl ApiClient {
                 Err(e) => {
                     if attempt == max_retries {
                         let i18n = get_i18n();
-                        eprintln!(
-                            "\n\x1b[31m[X] {}\x1b[0m",
-                            i18n.get("api_retries_failed")
-                        );
+                        eprintln!("\n\x1b[31m[X] {}\x1b[0m", i18n.get("api_retries_failed"));
                         return Err(e);
                     }
                     let i18n = get_i18n();

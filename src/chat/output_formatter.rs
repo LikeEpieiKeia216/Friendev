@@ -6,7 +6,7 @@ use crate::ui::get_i18n;
 pub fn print_content(text: &str, has_reasoning: &mut bool) -> std::io::Result<()> {
     // If there was reasoning before, reset color and newline
     if *has_reasoning {
-        print!("\x1b[0m\n\n");  // Reset color and newline
+        print!("\x1b[0m\n\n"); // Reset color and newline
         *has_reasoning = false;
     }
     print!("{}", text);
@@ -14,13 +14,17 @@ pub fn print_content(text: &str, has_reasoning: &mut bool) -> std::io::Result<()
 }
 
 /// Handle reasoning output
-pub fn print_reasoning(text: &str, is_first_reasoning: &mut bool, has_reasoning: &mut bool) -> std::io::Result<()> {
+pub fn print_reasoning(
+    text: &str,
+    is_first_reasoning: &mut bool,
+    has_reasoning: &mut bool,
+) -> std::io::Result<()> {
     let i18n = get_i18n();
     if *is_first_reasoning {
-        print!("\x1b[90m[{}] ", i18n.get("chat_think_label"));  // Dark gray hint
+        print!("\x1b[90m[{}] ", i18n.get("chat_think_label")); // Dark gray hint
         *is_first_reasoning = false;
     }
-    print!("\x1b[90m{}", text);  // Dark gray for reasoning
+    print!("\x1b[90m{}", text); // Dark gray for reasoning
     io::stdout().flush()?;
     *has_reasoning = true;
     Ok(())

@@ -1,8 +1,8 @@
+use crate::ui::get_i18n;
+use anyhow::Result;
 use futures::Stream;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use anyhow::Result;
-use crate::ui::get_i18n;
 
 /// SSE line buffering stream
 /// Correctly handles split JSON data (a single data: line may be split across byte chunks)

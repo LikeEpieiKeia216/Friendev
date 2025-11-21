@@ -1,9 +1,9 @@
-mod model;
+mod agents;
+mod help;
 mod history;
 mod language;
+mod model;
 mod runcommand;
-mod help;
-mod agents;
 
 use anyhow::Result;
 
@@ -12,8 +12,8 @@ use crate::config::Config;
 use crate::history::ChatSession;
 use crate::i18n::I18n;
 
-pub use help::print_help;
 pub use agents::handle_agents_md_command;
+pub use help::print_help;
 
 /// Handle command - returns Ok(()) if successfully processed, Err if error
 pub async fn handle_command(

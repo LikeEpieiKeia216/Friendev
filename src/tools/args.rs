@@ -15,7 +15,7 @@ pub struct FileWriteArgs {
     pub path: String,
     pub content: String,
     #[serde(default = "default_write_mode")]
-    pub mode: String,  // "overwrite" 或 "append"
+    pub mode: String, // "overwrite" 或 "append"
 }
 
 pub fn default_write_mode() -> String {
@@ -29,9 +29,9 @@ pub struct Edit {
     #[serde(default)]
     pub replace_all: bool,
     #[serde(default)]
-    pub normalize: bool,  // 是否启用宽松匹配（忽略多余空格/换行符差异）
+    pub normalize: bool, // 是否启用宽松匹配（忽略多余空格/换行符差异）
     #[serde(default)]
-    pub regex: bool,  // 是否使用正则表达式匹配
+    pub regex: bool, // 是否使用正则表达式匹配
 }
 
 #[derive(Debug, Deserialize)]
@@ -53,8 +53,8 @@ pub fn default_max_results() -> usize {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct DiffHunk {
-    pub start_line: usize,  // 开始行号（从1开始）
-    pub num_lines: usize,   // 原文件中的行数
+    pub start_line: usize,   // 开始行号（从1开始）
+    pub num_lines: usize,    // 原文件中的行数
     pub new_content: String, // 新内容（完整文本）
 }
 

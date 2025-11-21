@@ -2,13 +2,11 @@
 pub fn clean_html(html: &str) -> String {
     // Decode HTML entities
     let text = html_escape::decode_html_entities(html);
-    
+
     // Remove HTML tags
-    let re_tags = regex::Regex::new(r"<[^>]+>").unwrap_or_else(|_| {
-        regex::Regex::new("").unwrap()
-    });
+    let re_tags = regex::Regex::new(r"<[^>]+>").unwrap_or_else(|_| regex::Regex::new("").unwrap());
     let cleaned = re_tags.replace_all(&text, "");
-    
+
     // Remove excess whitespace
     cleaned
         .lines()

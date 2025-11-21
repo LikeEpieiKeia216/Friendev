@@ -1,6 +1,6 @@
 use crate::history::ToolCall;
-use crate::ui::ToolCallDisplay;
 use crate::ui::get_i18n;
+use crate::ui::ToolCallDisplay;
 
 use super::parser::is_json_semantically_complete;
 
@@ -45,14 +45,18 @@ impl ToolCallAccumulator {
             id.clone()
         };
 
-        let entry = self.calls.entry(key.clone()).or_insert((String::new(), String::new()));
+        let entry = self
+            .calls
+            .entry(key.clone())
+            .or_insert((String::new(), String::new()));
 
         // Update name if provided
         if !name.is_empty() {
             entry.0 = name.clone();
             // Create UI display component
             if !self.displays.contains_key(&key) {
-                self.displays.insert(key.clone(), ToolCallDisplay::new(name.clone()));
+                self.displays
+                    .insert(key.clone(), ToolCallDisplay::new(name.clone()));
             }
         }
 
@@ -109,62 +113,66 @@ impl ToolCallAccumulator {
                 }
 
                 // Validate and fix JSON if needed
-                let fixed_arguments = if serde_json::from_str::<serde_json::Value>(&arguments).is_err() {
-                    let mut fixed = arguments.clone();
+                let fixed_arguments =
+                    if serde_json::from_str::<serde_json::Value>(&arguments).is_err() {
+                        let mut fixed = arguments.clone();
 
-                    // Special handling for file_write content truncation
-                    if name == "file_write" && has_tool_calls {
-                        if let Some(content_start) = fixed.rfind(r#""content""#) {
-                            let after_content = &fixed[content_start..];
-                            if after_content.matches('"').count() % 2 != 0 {
-                                fixed.push('"');
+                        // Special handling for file_write content truncation
+                        if name == "file_write" && has_tool_calls {
+                            if let Some(content_start) = fixed.rfind(r#""content""#) {
+                                let after_content = &fixed[content_start..];
+                                if after_content.matches('"').count() % 2 != 0 {
+                                    fixed.push('"');
+                                }
                             }
                         }
-                    }
 
-                    // 1. Add missing closing braces
-                    let open_braces = fixed.matches('{').count();
-                    let close_braces = fixed.matches('}').count();
-                    if open_braces > close_braces {
-                        for _ in 0..(open_braces - close_braces) {
-                            fixed.push('}');
+                        // 1. Add missing closing braces
+                        let open_braces = fixed.matches('{').count();
+                        let close_braces = fixed.matches('}').count();
+                        if open_braces > close_braces {
+                            for _ in 0..(open_braces - close_braces) {
+                                fixed.push('}');
+                            }
                         }
-                    }
 
-                    // 2. Add missing quotes (global check)
-                    if fixed.matches('"').count() % 2 != 0 {
-                        fixed.push('"');
-                    }
+                        // 2. Add missing quotes (global check)
+                        if fixed.matches('"').count() % 2 != 0 {
+                            fixed.push('"');
+                        }
 
-                    // 3. Validate fixed JSON
-                    if serde_json::from_str::<serde_json::Value>(&fixed).is_ok() {
-                        let i18n = get_i18n();
-                        eprintln!(
-                            "\x1b[32m[✓] {}:\x1b[0m {} '{}' (has_tool_calls={})",
-                            i18n.get("info"),
-                            i18n.get("api_auto_fixed_json"),
-                            name,
-                            has_tool_calls
-                        );
-                        fixed
+                        // 3. Validate fixed JSON
+                        if serde_json::from_str::<serde_json::Value>(&fixed).is_ok() {
+                            let i18n = get_i18n();
+                            eprintln!(
+                                "\x1b[32m[✓] {}:\x1b[0m {} '{}' (has_tool_calls={})",
+                                i18n.get("info"),
+                                i18n.get("api_auto_fixed_json"),
+                                name,
+                                has_tool_calls
+                            );
+                            fixed
+                        } else {
+                            let i18n = get_i18n();
+                            eprintln!(
+                                "\x1b[31m[✗] {}:\x1b[0m {} '{}'",
+                                i18n.get("error"),
+                                i18n.get("api_failed_fix_json"),
+                                name
+                            );
+                            return None;
+                        }
                     } else {
-                        let i18n = get_i18n();
-                        eprintln!(
-                            "\x1b[31m[✗] {}:\x1b[0m {} '{}'",
-                            i18n.get("error"),
-                            i18n.get("api_failed_fix_json"),
-                            name
-                        );
-                        return None;
-                    }
-                } else {
-                    arguments.clone()
-                };
+                        arguments.clone()
+                    };
 
                 Some(ToolCall {
                     id,
                     tool_type: "function".to_string(),
-                    function: crate::history::FunctionCall { name, arguments: fixed_arguments },
+                    function: crate::history::FunctionCall {
+                        name,
+                        arguments: fixed_arguments,
+                    },
                 })
             })
             .collect()

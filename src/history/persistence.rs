@@ -1,9 +1,9 @@
+use super::session::ChatSession;
+use crate::config::Config;
 use anyhow::Result;
 use std::fs;
 use std::path::PathBuf;
 use uuid::Uuid;
-use crate::config::Config;
-use super::session::ChatSession;
 
 /// Get or create sessions directory
 pub fn sessions_dir() -> Result<PathBuf> {

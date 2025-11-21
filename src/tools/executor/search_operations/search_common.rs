@@ -45,8 +45,7 @@ pub fn generate_brief(count: usize, engine_name: Option<&str>) -> String {
     let i18n = get_i18n();
     if let Some(name) = engine_name {
         let tmpl = i18n.get("search_brief_with_engine");
-        tmpl
-            .replacen("{}", name, 1)
+        tmpl.replacen("{}", name, 1)
             .replacen("{}", &count.to_string(), 1)
     } else {
         let tmpl = i18n.get("search_brief");
@@ -71,9 +70,7 @@ pub fn create_search_error(error_msg: &str, engine_name: Option<&str>) -> ToolRe
 
     let error_text = if let Some(name) = engine_name {
         let tmpl = i18n.get("search_error_with_engine");
-        tmpl
-            .replacen("{}", name, 1)
-            .replacen("{}", error_msg, 1)
+        tmpl.replacen("{}", name, 1).replacen("{}", error_msg, 1)
     } else {
         let tmpl = i18n.get("search_error");
         tmpl.replace("{}", error_msg)

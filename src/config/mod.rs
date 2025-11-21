@@ -1,8 +1,8 @@
-mod types;
 mod defaults;
 mod paths;
 mod persistence;
 mod setup;
+mod types;
 mod updates;
 
 use anyhow::Result;

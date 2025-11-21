@@ -19,10 +19,13 @@ pub fn format_size(bytes: u64) -> String {
 pub fn get_tools_description() -> String {
     let tools = crate::tools::definitions::get_available_tools();
     let mut descriptions = Vec::new();
-    
+
     for tool in tools {
-        descriptions.push(format!("- {}: {}", tool.function.name, tool.function.description));
+        descriptions.push(format!(
+            "- {}: {}",
+            tool.function.name, tool.function.description
+        ));
     }
-    
+
     descriptions.join("\n")
 }

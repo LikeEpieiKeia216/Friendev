@@ -1,17 +1,17 @@
-use anyhow::Result;
-use super::types::Config;
-use super::persistence;
 use super::defaults;
+use super::persistence;
+use super::types::Config;
 use crate::i18n::{I18n, SUPPORTED_LANGUAGES};
+use anyhow::Result;
 
 /// Initialize configuration through interactive prompts
 pub fn initialize_config() -> Result<Config> {
     // Use default language (en) for setup prompts
     let i18n = I18n::new("en");
-    
+
     println!("\n{}", i18n.get("setup_welcome"));
     println!();
-    
+
     // Step 1: UI Language (first)
     let ui_language_idx = dialoguer::Select::new()
         .with_prompt(i18n.get("setup_ui_language"))
@@ -19,10 +19,10 @@ pub fn initialize_config() -> Result<Config> {
         .items(&SUPPORTED_LANGUAGES)
         .interact()?;
     let ui_language = SUPPORTED_LANGUAGES[ui_language_idx].to_string();
-    
+
     // Update i18n with selected language for remaining prompts
     let i18n = I18n::new(&ui_language);
-    
+
     // Step 2: API Key
     let api_key = dialoguer::Input::<String>::new()
         .with_prompt(i18n.get("setup_api_key"))

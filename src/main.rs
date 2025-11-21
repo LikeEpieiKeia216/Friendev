@@ -1,4 +1,3 @@
-mod agents;
 mod api;
 mod app;
 mod chat;
@@ -18,9 +17,9 @@ use anyhow::Result;
 async fn main() -> Result<()> {
     // Initialize application
     let state = app::initialize_app().await?;
-    
+
     // Run REPL loop
     app::run_repl(state).await?;
-    
+
     Ok(())
 }

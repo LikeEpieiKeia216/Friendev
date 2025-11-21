@@ -1,9 +1,9 @@
 mod en_us;
-mod zh_cn;
 mod loader;
+mod zh_cn;
 
-use std::collections::HashMap;
 use loader::load_messages;
+use std::collections::HashMap;
 
 // Re-export language validation and supported languages
 pub use loader::{is_language_supported, supported_languages_str};
@@ -22,7 +22,7 @@ impl I18n {
     /// Create a new I18n context for the specified language
     pub fn new(language: &str) -> Self {
         let messages = load_messages(language);
-        
+
         Self {
             language: language.to_string(),
             messages,

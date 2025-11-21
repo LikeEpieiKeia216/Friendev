@@ -22,10 +22,7 @@ impl Spinner {
     }
 
     pub fn render(&mut self, text: &str) {
-        print!("\r  {} {}", 
-            self.next_frame().bright_black(),
-            text.dimmed()
-        );
+        print!("\r  {} {}", self.next_frame().bright_black(), text.dimmed());
         io::stdout().flush().ok();
     }
 }

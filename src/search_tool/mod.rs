@@ -1,13 +1,13 @@
-mod types;
-mod html_parser;
-mod duckduckgo;
-mod bing;
 mod auto;
+mod bing;
 mod client;
+mod duckduckgo;
+mod html_parser;
+mod types;
 
 // Re-export public API
-pub use types::SearchResult;
 pub use auto::search_auto;
+pub use types::SearchResult;
 
 /// Search client for backward compatibility
 pub struct SearchClient {
@@ -21,14 +21,22 @@ impl SearchClient {
             client: client::create_client(),
         }
     }
-    
+
     /// Search using DuckDuckGo
-    pub async fn search_duckduckgo(&self, keywords: &str, max_results: usize) -> anyhow::Result<Vec<SearchResult>> {
+    pub async fn search_duckduckgo(
+        &self,
+        keywords: &str,
+        max_results: usize,
+    ) -> anyhow::Result<Vec<SearchResult>> {
         duckduckgo::search_duckduckgo(&self.client, keywords, max_results).await
     }
-    
+
     /// Search using Bing
-    pub async fn search_bing(&self, keywords: &str, max_results: usize) -> anyhow::Result<Vec<SearchResult>> {
+    pub async fn search_bing(
+        &self,
+        keywords: &str,
+        max_results: usize,
+    ) -> anyhow::Result<Vec<SearchResult>> {
         bing::search_bing(&self.client, keywords, max_results).await
     }
 }

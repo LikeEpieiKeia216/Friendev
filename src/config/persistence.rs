@@ -1,7 +1,7 @@
+use super::paths;
+use super::types::Config;
 use anyhow::Result;
 use std::fs;
-use super::types::Config;
-use super::paths;
 
 /// Load configuration from disk
 pub fn load_config() -> Result<Option<Config>> {

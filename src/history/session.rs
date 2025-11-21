@@ -1,12 +1,12 @@
+use super::management;
+use super::persistence;
+use super::types::Message;
+use crate::ui::get_i18n;
+use anyhow::Result;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use uuid::Uuid;
-use anyhow::Result;
-use super::types::Message;
-use super::persistence;
-use super::management;
-use crate::ui::get_i18n;
 
 /// Chat session containing messages and metadata
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -73,7 +73,7 @@ impl ChatSession {
 
         first_user_msg
     }
-    
+
     /// Delete this session from disk
     pub fn delete(&self) -> Result<()> {
         management::delete_session(self)

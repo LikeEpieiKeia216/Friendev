@@ -2,20 +2,16 @@ use anyhow::Result;
 use std::fs;
 use std::path::Path;
 
-use crate::tools::types::ToolResult;
-use crate::tools::args::FileListArgs;
-use crate::ui::get_i18n;
 use super::file_common::normalize_path;
+use crate::tools::args::FileListArgs;
+use crate::tools::types::ToolResult;
+use crate::ui::get_i18n;
 
-pub async fn execute_file_list(
-    arguments: &str,
-    working_dir: &Path,
-) -> Result<ToolResult> {
-    let args: FileListArgs = serde_json::from_str(arguments)
-        .unwrap_or(FileListArgs { path: None });
+pub async fn execute_file_list(arguments: &str, working_dir: &Path) -> Result<ToolResult> {
+    let args: FileListArgs = serde_json::from_str(arguments).unwrap_or(FileListArgs { path: None });
 
     let i18n = get_i18n();
-    
+
     let target_path = if let Some(path) = args.path {
         normalize_path(&path, working_dir)
     } else {
@@ -24,12 +20,16 @@ pub async fn execute_file_list(
 
     if !target_path.exists() {
         let tmpl = i18n.get("file_path_not_exist");
-        return Ok(ToolResult::error(tmpl.replace("{}", &target_path.display().to_string())));
+        return Ok(ToolResult::error(
+            tmpl.replace("{}", &target_path.display().to_string()),
+        ));
     }
 
     if !target_path.is_dir() {
         let tmpl = i18n.get("file_not_directory");
-        return Ok(ToolResult::error(tmpl.replace("{}", &target_path.display().to_string())));
+        return Ok(ToolResult::error(
+            tmpl.replace("{}", &target_path.display().to_string()),
+        ));
     }
 
     let mut items = Vec::new();
@@ -42,7 +42,7 @@ pub async fn execute_file_list(
         } else {
             i18n.get("file_item_type_file")
         };
-        
+
         let metadata = entry.metadata()?;
         let size = if metadata.is_file() {
             crate::tools::utils::format_size(metadata.len())
@@ -72,7 +72,8 @@ pub async fn execute_file_list(
     let output = format!(
         "{}\n{}\n\n{}",
         header,
-        i18n.get("file_list_count").replace("{}", &items.len().to_string()),
+        i18n.get("file_list_count")
+            .replace("{}", &items.len().to_string()),
         items.join("\n")
     );
 

@@ -1,26 +1,25 @@
+use super::html_parser::clean_html;
+use super::types::SearchResult;
+use crate::ui::get_i18n;
 use anyhow::{anyhow, Result};
 use reqwest::Client;
 use scraper::{Html, Selector};
-use super::types::SearchResult;
-use super::html_parser::clean_html;
-use crate::ui::get_i18n;
 
 /// Search using Bing
-pub async fn search_bing(client: &Client, keywords: &str, max_results: usize) -> Result<Vec<SearchResult>> {
-    let url = format!("https://www.bing.com/search?q={}", urlencoding::encode(keywords));
+pub async fn search_bing(
+    client: &Client,
+    keywords: &str,
+    max_results: usize,
+) -> Result<Vec<SearchResult>> {
+    let url = format!(
+        "https://www.bing.com/search?q={}",
+        urlencoding::encode(keywords)
+    );
 
-    let response = client
-        .get(&url)
-        .send()
-        .await
-        .map_err(|e| {
-            let i18n = get_i18n();
-            anyhow!(
-                "{}: {}",
-                i18n.get("search_bing_request_failed"),
-                e
-            )
-        })?;
+    let response = client.get(&url).send().await.map_err(|e| {
+        let i18n = get_i18n();
+        anyhow!("{}: {}", i18n.get("search_bing_request_failed"), e)
+    })?;
 
     if !response.status().is_success() {
         let i18n = get_i18n();
@@ -31,17 +30,10 @@ pub async fn search_bing(client: &Client, keywords: &str, max_results: usize) ->
         ));
     }
 
-    let body = response
-        .text()
-        .await
-        .map_err(|e| {
-            let i18n = get_i18n();
-            anyhow!(
-                "{}: {}",
-                i18n.get("search_bing_read_failed"),
-                e
-            )
-        })?;
+    let body = response.text().await.map_err(|e| {
+        let i18n = get_i18n();
+        anyhow!("{}: {}", i18n.get("search_bing_read_failed"), e)
+    })?;
 
     parse_bing_html(&body, max_results)
 }
@@ -52,9 +44,8 @@ fn parse_bing_html(html: &str, max_results: usize) -> Result<Vec<SearchResult>> 
     let mut results = Vec::new();
 
     // Bing search result selectors: in li.b_algo
-    let li_selector = Selector::parse("li.b_algo").unwrap_or_else(|_| {
-        Selector::parse("div.b_algoBx").unwrap()
-    });
+    let li_selector =
+        Selector::parse("li.b_algo").unwrap_or_else(|_| Selector::parse("div.b_algoBx").unwrap());
 
     for element in document.select(&li_selector).take(max_results) {
         // Extract title and link

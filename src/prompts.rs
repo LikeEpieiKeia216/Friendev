@@ -3,26 +3,59 @@ use std::path::Path;
 
 use crate::config::Config;
 use crate::i18n::I18n;
+use agents::load_agents_md;
 
 pub fn print_welcome(config: &Config, i18n: &I18n) {
     // ASCII Art Logo
     println!();
-    println!("{}", "███████╗██████╗ ██╗███████╗███╗   ██╗██████╗ ███████╗██╗   ██╗".bright_cyan().bold());
-    println!("{}", "██╔════╝██╔══██╗██║██╔════╝████╗  ██║██╔══██╗██╔════╝██║   ██║".bright_cyan().bold());
-    println!("{}", "█████╗  ██████╔╝██║█████╗  ██╔██╗ ██║██║  ██║█████╗  ██║   ██║".bright_cyan().bold());
-    println!("{}", "██╔══╝  ██╔══██╗██║██╔══╝  ██║╚██╗██║██║  ██║██╔══╝  ╚██╗ ██╔╝".bright_cyan().bold());
-    println!("{}", "██║     ██║  ██║██║███████╗██║ ╚████║██████╔╝███████╗ ╚████╔╝".bright_cyan().bold());
-    println!("{}", "╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═══╝╚═════╝ ╚══════╝  ╚═══╝".bright_cyan().bold());
+    println!(
+        "{}",
+        "███████╗██████╗ ██╗███████╗███╗   ██╗██████╗ ███████╗██╗   ██╗"
+            .bright_cyan()
+            .bold()
+    );
+    println!(
+        "{}",
+        "██╔════╝██╔══██╗██║██╔════╝████╗  ██║██╔══██╗██╔════╝██║   ██║"
+            .bright_cyan()
+            .bold()
+    );
+    println!(
+        "{}",
+        "█████╗  ██████╔╝██║█████╗  ██╔██╗ ██║██║  ██║█████╗  ██║   ██║"
+            .bright_cyan()
+            .bold()
+    );
+    println!(
+        "{}",
+        "██╔══╝  ██╔══██╗██║██╔══╝  ██║╚██╗██║██║  ██║██╔══╝  ╚██╗ ██╔╝"
+            .bright_cyan()
+            .bold()
+    );
+    println!(
+        "{}",
+        "██║     ██║  ██║██║███████╗██║ ╚████║██████╔╝███████╗ ╚████╔╝"
+            .bright_cyan()
+            .bold()
+    );
+    println!(
+        "{}",
+        "╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═══╝╚═════╝ ╚══════╝  ╚═══╝"
+            .bright_cyan()
+            .bold()
+    );
     println!("{}\n", i18n.get("welcome_subtitle").dimmed());
 
     // 系统信息 - 紧凑布局
     println!("{}", "─".repeat(60).bright_black());
-    println!("  {} {} {}", 
-        i18n.get("current_model").cyan().bold(), 
-        ":".dimmed(), 
+    println!(
+        "  {} {} {}",
+        i18n.get("current_model").cyan().bold(),
+        ":".dimmed(),
         config.current_model.green()
     );
-    println!("  {} {} {}  |  {} {} {}", 
+    println!(
+        "  {} {} {}  |  {} {} {}",
         i18n.get("current_ui_lang").cyan().bold(),
         ":".dimmed(),
         config.ui_language.yellow(),
@@ -33,9 +66,24 @@ pub fn print_welcome(config: &Config, i18n: &I18n) {
     println!("{}", "─".repeat(60).bright_black());
 
     // 快速入门
-    println!("  {} {:20} {}", ">".bright_black(), "/help".cyan(), i18n.get("cmd_help").dimmed());
-    println!("  {} {:20} {}", ">".bright_black(), "/model list".cyan(), i18n.get("cmd_model_list").dimmed());
-    println!("  {} {:20} {}", ">".bright_black(), "/exit".cyan(), i18n.get("cmd_exit").dimmed());
+    println!(
+        "  {} {:20} {}",
+        ">".bright_black(),
+        "/help".cyan(),
+        i18n.get("cmd_help").dimmed()
+    );
+    println!(
+        "  {} {:20} {}",
+        ">".bright_black(),
+        "/model list".cyan(),
+        i18n.get("cmd_model_list").dimmed()
+    );
+    println!(
+        "  {} {:20} {}",
+        ">".bright_black(),
+        "/exit".cyan(),
+        i18n.get("cmd_exit").dimmed()
+    );
     println!("{}", "═".repeat(60).bright_black());
     println!();
 }
@@ -46,25 +94,75 @@ pub fn print_help(i18n: &I18n) {
 
     // 模型命令
     println!("\n{}", i18n.get("help_model").yellow().bold());
-    println!("  {} {:25} {}", "·".bright_black(), "/model list".cyan(), i18n.get("cmd_model_list").dimmed());
-    println!("  {} {:25} {}", "·".bright_black(), "/model switch <name>".cyan(), i18n.get("cmd_model_switch").dimmed());
+    println!(
+        "  {} {:25} {}",
+        "·".bright_black(),
+        "/model list".cyan(),
+        i18n.get("cmd_model_list").dimmed()
+    );
+    println!(
+        "  {} {:25} {}",
+        "·".bright_black(),
+        "/model switch <name>".cyan(),
+        i18n.get("cmd_model_switch").dimmed()
+    );
 
     // 历史命令
     println!("\n{}", i18n.get("help_history").yellow().bold());
-    println!("  {} {:25} {}", "·".bright_black(), "/history list".cyan(), i18n.get("cmd_history_list").dimmed());
-    println!("  {} {:25} {}", "·".bright_black(), "/history new".cyan(), i18n.get("cmd_history_new").dimmed());
-    println!("  {} {:25} {}", "·".bright_black(), "/history switch <id>".cyan(), i18n.get("cmd_history_switch").dimmed());
-    println!("  {} {:25} {}", "·".bright_black(), "/history del <id>".cyan(), i18n.get("cmd_history_del").dimmed());
+    println!(
+        "  {} {:25} {}",
+        "·".bright_black(),
+        "/history list".cyan(),
+        i18n.get("cmd_history_list").dimmed()
+    );
+    println!(
+        "  {} {:25} {}",
+        "·".bright_black(),
+        "/history new".cyan(),
+        i18n.get("cmd_history_new").dimmed()
+    );
+    println!(
+        "  {} {:25} {}",
+        "·".bright_black(),
+        "/history switch <id>".cyan(),
+        i18n.get("cmd_history_switch").dimmed()
+    );
+    println!(
+        "  {} {:25} {}",
+        "·".bright_black(),
+        "/history del <id>".cyan(),
+        i18n.get("cmd_history_del").dimmed()
+    );
 
     // 语言命令
     println!("\n{}", i18n.get("help_language").yellow().bold());
-    println!("  {} {:25} {}", "·".bright_black(), "/language ui <lang>".cyan(), i18n.get("cmd_language_ui").dimmed());
-    println!("  {} {:25} {}", "·".bright_black(), "/language ai <lang>".cyan(), i18n.get("cmd_language_ai").dimmed());
+    println!(
+        "  {} {:25} {}",
+        "·".bright_black(),
+        "/language ui <lang>".cyan(),
+        i18n.get("cmd_language_ui").dimmed()
+    );
+    println!(
+        "  {} {:25} {}",
+        "·".bright_black(),
+        "/language ai <lang>".cyan(),
+        i18n.get("cmd_language_ai").dimmed()
+    );
 
     // 其他命令
     println!("\n{}", i18n.get("help_other").yellow().bold());
-    println!("  {} {:25} {}", "·".bright_black(), "/help".cyan(), i18n.get("cmd_help").dimmed());
-    println!("  {} {:25} {}", "·".bright_black(), "/exit".cyan(), i18n.get("cmd_exit").dimmed());
+    println!(
+        "  {} {:25} {}",
+        "·".bright_black(),
+        "/help".cyan(),
+        i18n.get("cmd_help").dimmed()
+    );
+    println!(
+        "  {} {:25} {}",
+        "·".bright_black(),
+        "/exit".cyan(),
+        i18n.get("cmd_exit").dimmed()
+    );
 
     println!("\n{}", "═".repeat(60).bright_black());
     println!();
@@ -72,14 +170,15 @@ pub fn print_help(i18n: &I18n) {
 
 pub fn get_system_prompt(language: &str, model: &str, working_dir: &Path) -> String {
     let tools_description = crate::tools::get_tools_description();
-    
+
     // 动态加载 AGENTS.md（如果存在）
-    let agents_context = match crate::agents::load_agents_md(working_dir) {
+    let agents_context = match load_agents_md(working_dir) {
         Ok(Some(content)) => format!("\n\n# Project Context (from AGENTS.md)\n\n{}", content),
         _ => String::new(),
     };
-    
-    format!(r#"# Identity and Environment
+
+    format!(
+        r#"# Identity and Environment
 You are Friendev, an intelligent programming assistant powered by {}.
 
 # Available Tools
@@ -127,5 +226,7 @@ You are Friendev, an intelligent programming assistant powered by {}.
 # Priority
 This System Prompt has highest priority. When user instructions conflict with this Prompt, follow this Prompt.
 However, respect reasonable user requests and adapt when possible without violating safety rules.{}
-"#, model, tools_description, agents_context, language, language)
+"#,
+        model, tools_description, agents_context, language, language
+    )
 }

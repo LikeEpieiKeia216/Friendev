@@ -1,13 +1,13 @@
+use super::project_analyzer::analyze_project_structure;
 use anyhow::Result;
 use std::path::Path;
-use super::project_analyzer::analyze_project_structure;
 
 /// Generate prompt for AI to analyze project and generate AGENTS.md
 pub fn generate_agents_analysis_prompt(working_dir: &Path) -> Result<String> {
     let project_structure = analyze_project_structure(working_dir)?;
-    
+
     Ok(format!(
-r#"Analyze this project and generate a comprehensive AGENTS.md file.
+        r#"Analyze this project and generate a comprehensive AGENTS.md file.
 
 ## Project Structure
 
@@ -60,15 +60,11 @@ AGENTS.md is a Markdown file placed in the project root directory. It provides A
 
 ### Output Format
 
-Output ONLY the AGENTS.md content in a markdown code block:
-
 ```markdown
 # AGENTS.md
 
 [Your generated content...]
 ```
-
-Do not include any explanation before or after the code block. The content will be parsed and saved to the file.
 "#,
         project_structure
     ))

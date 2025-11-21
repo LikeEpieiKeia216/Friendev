@@ -4,7 +4,7 @@ use std::path::Path;
 /// Load binary file patterns from .gitattributes
 pub fn load_gitattributes(working_dir: &Path) -> Vec<String> {
     let gitattributes_path = working_dir.join(".gitattributes");
-    
+
     if let Ok(content) = fs::read_to_string(gitattributes_path) {
         content
             .lines()
@@ -32,10 +32,8 @@ pub fn load_gitattributes(working_dir: &Path) -> Vec<String> {
 pub fn is_binary_file(filename: &str, binary_patterns: &[String]) -> bool {
     for pattern in binary_patterns {
         // Simple pattern matching: support * wildcard
-        let regex_pattern = pattern
-            .replace(".", "\\.")
-            .replace("*", ".*");
-        
+        let regex_pattern = pattern.replace(".", "\\.").replace("*", ".*");
+
         if let Ok(re) = regex::Regex::new(&regex_pattern) {
             if re.is_match(filename) {
                 return true;

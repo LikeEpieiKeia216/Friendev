@@ -55,9 +55,10 @@ impl ToolCallDisplay {
         } else {
             i18n.get("tool_action_using")
         };
-        
-        print!("\r  {} {} {}", 
-            status, 
+
+        print!(
+            "\r  {} {} {}",
+            status,
             action.dimmed(),
             self.name.cyan().bold()
         );
@@ -79,7 +80,8 @@ impl ToolCallDisplay {
             "•".red()
         };
 
-        println!("  {} {} {}", 
+        println!(
+            "  {} {} {}",
             bullet,
             i18n.get("tool_action_used").dimmed(),
             self.name.cyan().bold()
@@ -105,17 +107,15 @@ pub fn extract_key_argument(tool_name: &str, arguments: &str) -> Option<String> 
     };
 
     let key = match tool_name {
-        "file_read" | "file_write" => {
-            json.get("path")
-                .and_then(|v| v.as_str())
-                .map(|s| normalize_path(s))
-        }
-        "file_list" => {
-            json.get("path")
-                .and_then(|v| v.as_str())
-                .map(|s| normalize_path(s))
-                .or_else(|| Some("./".to_string()))
-        }
+        "file_read" | "file_write" => json
+            .get("path")
+            .and_then(|v| v.as_str())
+            .map(|s| normalize_path(s)),
+        "file_list" => json
+            .get("path")
+            .and_then(|v| v.as_str())
+            .map(|s| normalize_path(s))
+            .or_else(|| Some("./".to_string())),
         _ => None,
     };
 
@@ -125,16 +125,16 @@ pub fn extract_key_argument(tool_name: &str, arguments: &str) -> Option<String> 
 /// 规范化路径显示（简化为相对路径）
 fn normalize_path(path: &str) -> String {
     use std::path::Path;
-    
+
     let p = Path::new(path);
-    
+
     // 如果是当前目录下的文件，使用相对路径
     if let Ok(cwd) = std::env::current_dir() {
         if let Ok(relative) = p.strip_prefix(&cwd) {
             return relative.display().to_string();
         }
     }
-    
+
     path.to_string()
 }
 
@@ -144,7 +144,7 @@ fn shorten_middle(s: &str, max_len: usize) -> String {
     if char_count <= max_len {
         return s.to_string();
     }
-    
+
     let half = (max_len - 3) / 2;
     let start: String = s.chars().take(half).collect();
     let end: String = s.chars().skip(char_count - half).collect();

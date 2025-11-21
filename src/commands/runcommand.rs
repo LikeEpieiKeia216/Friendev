@@ -5,34 +5,29 @@ use crate::i18n::I18n;
 /// Handle /runcommand command
 pub fn handle_run_command_command(parts: &[&str], i18n: &I18n) -> Result<()> {
     match parts.get(1) {
-        Some(&"list") => {
-            match crate::tools::command_manager::CommandConfig::load() {
-                Ok(config) => {
-                    let commands = config.list_always_approve_commands();
+        Some(&"list") => match crate::tools::command_manager::CommandConfig::load() {
+            Ok(config) => {
+                let commands = config.list_always_approve_commands();
 
-                    if commands.is_empty() {
-                        println!(
-                            "\n\x1b[90m[i] {}\x1b[0m\n",
-                            i18n.get("runcommand_no_commands")
-                        );
-                    } else {
-                        println!(
-                            "\n\x1b[1;33m{}:\x1b[0m",
-                            i18n.get("runcommand_list_header")
-                        );
-                        for (i, cmd) in commands.iter().enumerate() {
-                            println!("  \x1b[32m[{}]\x1b[0m {}", i + 1, cmd);
-                        }
-                        println!();
+                if commands.is_empty() {
+                    println!(
+                        "\n\x1b[90m[i] {}\x1b[0m\n",
+                        i18n.get("runcommand_no_commands")
+                    );
+                } else {
+                    println!("\n\x1b[1;33m{}:\x1b[0m", i18n.get("runcommand_list_header"));
+                    for (i, cmd) in commands.iter().enumerate() {
+                        println!("  \x1b[32m[{}]\x1b[0m {}", i + 1, cmd);
                     }
+                    println!();
                 }
-                Err(e) => eprintln!(
-                    "\n\x1b[31m[X] {}:\x1b[0m {}\n",
-                    i18n.get("runcommand_load_config_failed"),
-                    e
-                ),
             }
-        }
+            Err(e) => eprintln!(
+                "\n\x1b[31m[X] {}:\x1b[0m {}\n",
+                i18n.get("runcommand_load_config_failed"),
+                e
+            ),
+        },
         Some(&"add") => {
             if let Some(cmd) = parts.get(2) {
                 let mut config = match crate::tools::command_manager::CommandConfig::load() {
@@ -104,10 +99,7 @@ pub fn handle_run_command_command(parts: &[&str], i18n: &I18n) -> Result<()> {
                 match crate::tools::command_manager::CommandConfig::load() {
                     Ok(config) => {
                         if let Some(cmd) = config.get_background_command(id_str) {
-                            println!(
-                                "\n\x1b[1;33m{}:\x1b[0m",
-                                i18n.get("runcommand_info_header")
-                            );
+                            println!("\n\x1b[1;33m{}:\x1b[0m", i18n.get("runcommand_info_header"));
                             println!("  {} {}", i18n.get("runcommand_info_id"), cmd.id);
                             println!("  {} {}", i18n.get("runcommand_info_command"), cmd.command);
                             println!("  {} {}", i18n.get("runcommand_info_status"), cmd.status);
@@ -122,7 +114,10 @@ pub fn handle_run_command_command(parts: &[&str], i18n: &I18n) -> Result<()> {
                             }
 
                             if let Some(output) = &cmd.output {
-                                println!("\n\x1b[1;33m{}:\x1b[0m", i18n.get("runcommand_info_output"));
+                                println!(
+                                    "\n\x1b[1;33m{}:\x1b[0m",
+                                    i18n.get("runcommand_info_output")
+                                );
                                 println!("  {}", output.replace("\n", "\n  "));
                             }
 
@@ -148,7 +143,10 @@ pub fn handle_run_command_command(parts: &[&str], i18n: &I18n) -> Result<()> {
             }
         }
         _ => {
-            println!("\n\x1b[33m[?] {}:\x1b[0m", i18n.get("runcommand_help_header"));
+            println!(
+                "\n\x1b[33m[?] {}:\x1b[0m",
+                i18n.get("runcommand_help_header")
+            );
             println!(
                 "    \x1b[36m/runcommand\x1b[0m list        {}",
                 i18n.get("cmd_runcommand_list")

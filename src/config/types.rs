@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use super::defaults;
+use serde::{Deserialize, Serialize};
 
 /// Application configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
