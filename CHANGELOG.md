@@ -1,6 +1,13 @@
 # Changelog
+- all friendev update changelog on here.
+---
+## [0.2.1] - 2025-11-22
+- Roll back the codebase to the pre-refactored C/S, as there are many issues
 
-all friendev update changelog on here.
+---
+## [0.2.0] - 2025-11-22
+- Refactoring for C/S architecture
+- Split into multiple crates, becoming a multi-crate workspace
 ---
 ## [0.1.5] - 2025-11-20
 #### Added
@@ -52,13 +59,11 @@ all friendev update changelog on here.
 - On startup, the system now automatically deletes any history files containing zero messages, keeping the session list clean. (By Friendev)
 ---
 ## [0.1.2] - 2025-11-13
-﻿
 ### Added
 - **New internet search capabilities** with three search tools:
 - `network_search_auto`: Automatically selects between search engines (defaults to DuckDuckGo, falls back to Bing)
 - `network_search_duckduckgo`: Direct DuckDuckGo search integration
 - `network_search_bing`: Direct Bing search integration
-﻿
 ### Enhanced
 - **Implemented timeout and retry mechanism** for AI requests to improve reliability
 - **Refactored JSON streaming logic** with Server-Sent Events (SSE) implementation
