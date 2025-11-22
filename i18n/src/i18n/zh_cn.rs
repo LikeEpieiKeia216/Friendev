@@ -198,10 +198,6 @@ pub fn get_messages() -> HashMap<String, String> {
     m.insert("approval_review_decision".to_string(), "建议:".to_string());
     m.insert("approval_review_details".to_string(), "详情:".to_string());
     m.insert(
-        "approval_review_bad_decision".to_string(),
-        "检测到非预期的建议结果：{}（期望“同意”或“拒绝”）。".to_string(),
-    );
-    m.insert(
         "approval_review_followup".to_string(),
         "审查完成，请输入最终决定（仅限 Y/N）。".to_string(),
     );
@@ -212,6 +208,14 @@ pub fn get_messages() -> HashMap<String, String> {
     m.insert(
         "approval_review_invalid_choice".to_string(),
         "输入无效，请输入 Y 或 N。".to_string(),
+    );
+    m.insert(
+        "approval_review_decision_yes".to_string(),
+        "同意执行".to_string(),
+    );
+    m.insert(
+        "approval_review_decision_no".to_string(),
+        "拒绝执行".to_string(),
     );
 
     m.insert(

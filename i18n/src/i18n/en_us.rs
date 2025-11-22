@@ -261,10 +261,6 @@ pub fn get_messages() -> HashMap<String, String> {
         "Details:".to_string(),
     );
     m.insert(
-        "approval_review_bad_decision".to_string(),
-        "Unexpected decision value: {} (expected '同意' or '拒绝').".to_string(),
-    );
-    m.insert(
         "approval_review_followup".to_string(),
         "Review complete. Please enter the final decision (Y/N only).".to_string(),
     );
@@ -275,6 +271,14 @@ pub fn get_messages() -> HashMap<String, String> {
     m.insert(
         "approval_review_invalid_choice".to_string(),
         "Invalid choice. Please enter Y or N.".to_string(),
+    );
+    m.insert(
+        "approval_review_decision_yes".to_string(),
+        "Approve".to_string(),
+    );
+    m.insert(
+        "approval_review_decision_no".to_string(),
+        "Reject".to_string(),
     );
 
     m.insert(
