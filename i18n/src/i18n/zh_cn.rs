@@ -300,6 +300,56 @@ pub fn get_messages() -> HashMap<String, String> {
         "尝试使用 Bing...".to_string(),
     );
 
+    // Network fetch tool messages
+    m.insert(
+        "network_fetch_invalid_url".to_string(),
+        "无效的 URL：{}".to_string(),
+    );
+    m.insert(
+        "network_fetch_unsupported_scheme".to_string(),
+        "不支持的 URL 协议：{}（仅允许 http 或 https）".to_string(),
+    );
+    m.insert(
+        "network_fetch_request_error".to_string(),
+        "请求 URL 失败：{}".to_string(),
+    );
+    m.insert(
+        "network_fetch_timeout".to_string(),
+        "请求 URL 超时。".to_string(),
+    );
+    m.insert(
+        "network_fetch_status_error".to_string(),
+        "请求失败，状态码 {}（{}）".to_string(),
+    );
+    m.insert(
+        "network_fetch_too_large".to_string(),
+        "响应体过大（限制 {}）。".to_string(),
+    );
+    m.insert(
+        "network_fetch_non_text".to_string(),
+        "不支持的内容类型：{}（仅允许文本内容）。".to_string(),
+    );
+    m.insert(
+        "network_fetch_brief".to_string(),
+        "成功获取 {} 数据。".to_string(),
+    );
+    m.insert(
+        "network_fetch_brief_truncated".to_string(),
+        "成功获取 {} 数据（已截断）。".to_string(),
+    );
+    m.insert(
+        "network_fetch_truncated_note".to_string(),
+        "注意：内容已截断至 {}。".to_string(),
+    );
+    m.insert(
+        "network_fetch_html_note".to_string(),
+        "注意：HTML 内容已转换为纯文本。".to_string(),
+    );
+    m.insert(
+        "network_fetch_output".to_string(),
+        "URL：{}\n状态：{}\nContent-Type：{}\n大小：{}\n{}\n内容：\n{}".to_string(),
+    );
+
     // Run command tool messages
     m.insert(
         "run_command_user_cancelled".to_string(),

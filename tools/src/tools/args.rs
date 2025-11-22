@@ -70,3 +70,10 @@ pub struct RunCommandArgs {
     #[serde(default)]
     pub background: bool, // 是否后台运行
 }
+
+#[derive(Debug, Deserialize)]
+pub struct FetchUrlArgs {
+    pub url: String,
+    #[serde(default)]
+    pub max_bytes: Option<usize>,
+}

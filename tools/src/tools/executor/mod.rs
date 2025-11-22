@@ -6,6 +6,7 @@ use ui::get_i18n;
 
 mod command_operations;
 pub mod file_operations;
+pub mod network_operations;
 pub mod search_operations;
 mod utils;
 
@@ -32,6 +33,7 @@ pub async fn execute_tool(
             search_operations::execute_search_duckduckgo(arguments).await
         }
         "network_search_bing" => search_operations::execute_search_bing(arguments).await,
+        "network_get_content" => network_operations::execute_fetch_content(arguments).await,
         "run_command" => command_operations::execute_run_command(arguments, require_approval).await,
         _ => {
             let i18n = get_i18n();

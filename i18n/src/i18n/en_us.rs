@@ -357,6 +357,56 @@ pub fn get_messages() -> HashMap<String, String> {
     );
     m.insert("search_try_bing".to_string(), "Try Bing...".to_string());
 
+    // Network fetch tool messages
+    m.insert(
+        "network_fetch_invalid_url".to_string(),
+        "Invalid URL: {}".to_string(),
+    );
+    m.insert(
+        "network_fetch_unsupported_scheme".to_string(),
+        "Unsupported URL scheme: {} (only http and https are allowed)".to_string(),
+    );
+    m.insert(
+        "network_fetch_request_error".to_string(),
+        "Failed to fetch URL: {}".to_string(),
+    );
+    m.insert(
+        "network_fetch_timeout".to_string(),
+        "Request timed out while fetching the URL.".to_string(),
+    );
+    m.insert(
+        "network_fetch_status_error".to_string(),
+        "Request failed with status {} ({})".to_string(),
+    );
+    m.insert(
+        "network_fetch_too_large".to_string(),
+        "Response too large (limit {}).".to_string(),
+    );
+    m.insert(
+        "network_fetch_non_text".to_string(),
+        "Unsupported content type: {} (only textual responses are allowed).".to_string(),
+    );
+    m.insert(
+        "network_fetch_brief".to_string(),
+        "Fetched {} from URL.".to_string(),
+    );
+    m.insert(
+        "network_fetch_brief_truncated".to_string(),
+        "Fetched {} from URL (truncated).".to_string(),
+    );
+    m.insert(
+        "network_fetch_truncated_note".to_string(),
+        "Note: Content truncated to {}.".to_string(),
+    );
+    m.insert(
+        "network_fetch_html_note".to_string(),
+        "Note: HTML content converted to plain text.".to_string(),
+    );
+    m.insert(
+        "network_fetch_output".to_string(),
+        "URL: {}\nStatus: {}\nContent-Type: {}\nSize: {}\n{}\nContent:\n{}".to_string(),
+    );
+
     // Run command tool messages
     m.insert(
         "run_command_user_cancelled".to_string(),

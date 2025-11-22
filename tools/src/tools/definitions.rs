@@ -189,6 +189,29 @@ pub fn get_available_tools() -> Vec<Tool> {
         Tool {
             tool_type: "function".to_string(),
             function: ToolFunction {
+                name: "network_get_content".to_string(),
+                description: "Fetch textual content from a URL via HTTP GET with size and content-type safeguards.".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "url": {
+                            "type": "string",
+                            "description": "HTTP or HTTPS URL to fetch"
+                        },
+                        "max_bytes": {
+                            "type": "integer",
+                            "description": "Optional maximum number of bytes to read (defaults to 524288, min 1024, max 1048576)",
+                            "minimum": 1024,
+                            "maximum": 1048576
+                        }
+                    },
+                    "required": ["url"]
+                }),
+            },
+        },
+        Tool {
+            tool_type: "function".to_string(),
+            function: ToolFunction {
                 name: "file_diff_edit".to_string(),
                 description: "Edit file content using diff-style hunks. Each hunk specifies a line range and its new content. This is useful for precise multi-location edits.".to_string(),
                 parameters: json!({
