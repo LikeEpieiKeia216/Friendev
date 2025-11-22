@@ -2,7 +2,8 @@
 - all friendev update changelog on here.
 ---
 ## [0.2.1] - 2025-11-22
-- Roll back the codebase to the pre-refactored C/S, as there are many issues
+- Roll back the codebase to the time before it was refactored into C/S (Only Client), as there are many issues
+
 
 ---
 ## [0.2.0] - 2025-11-22
