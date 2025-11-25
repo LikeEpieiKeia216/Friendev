@@ -1,7 +1,6 @@
-use colored::Colorize;
-use std::io::{self, Write};
+use std::io;
 
-use super::get_i18n;
+use super::enhanced_output::ToolProgress;
 
 /// UI 组件，用于展示工具调用的流式进度
 #[derive(Clone)]
@@ -36,65 +35,29 @@ impl ToolCallDisplay {
         self.result_brief = brief;
     }
 
-    /// 渲染正在进行的状态（流式显示）
+    /// 渲染正在进行的状态（流式显示）- 使用 ToolProgress 实现
     pub fn render_streaming(&self) {
-        let i18n = get_i18n();
-
-        let status = if self.is_finished {
-            if self.is_success {
-                "•".green()
-            } else {
-                "•".red()
-            }
-        } else {
-            "⠋".bright_black()
-        };
-
-        let action = if self.is_finished {
-            i18n.get("tool_action_used")
-        } else {
-            i18n.get("tool_action_using")
-        };
-
-        print!(
-            "\r  {} {} {}",
-            status,
-            action.dimmed(),
-            self.name.cyan().bold()
-        );
-
-        if let Some(arg) = &self.key_argument {
-            print!(" {}", format!("({})", arg).bright_black());
+        // 已完成的不再显示
+        if self.is_finished {
+            return;
         }
-
-        io::stdout().flush().ok();
+        
+        // 创建 ToolProgress 并启动
+        let mut progress = ToolProgress::new(self.name.clone(), self.key_argument.clone());
+        let _ = progress.start();
     }
 
     /// 渲染最终状态
     pub fn render_final(&self) {
-        let i18n = get_i18n();
-
-        let bullet = if self.is_success {
-            "•".green()
+        let progress = ToolProgress::new(self.name.clone(), self.key_argument.clone());
+        
+        let result: io::Result<()> = if self.is_success {
+            progress.finish_success(self.result_brief.as_deref())
         } else {
-            "•".red()
+            progress.finish_error(self.result_brief.as_deref())
         };
-
-        println!(
-            "  {} {} {}",
-            bullet,
-            i18n.get("tool_action_used").dimmed(),
-            self.name.cyan().bold()
-        );
-
-        if let Some(brief) = &self.result_brief {
-            let style = if self.is_success {
-                brief.bright_black()
-            } else {
-                brief.red()
-            };
-            println!("    {}", style);
-        }
+        
+        let _ = result;
     }
 }
 

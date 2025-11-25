@@ -92,6 +92,7 @@ pub fn get_messages() -> HashMap<String, String> {
     // Tool messages
     m.insert("tool_call".to_string(), "TOOL".to_string());
     m.insert("thinking".to_string(), "THINK".to_string());
+    m.insert("tools_header".to_string(), "Using Tools".to_string());
 
     // Error messages
     m.insert("error".to_string(), "Error".to_string());

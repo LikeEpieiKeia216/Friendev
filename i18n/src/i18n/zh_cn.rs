@@ -65,6 +65,7 @@ pub fn get_messages() -> HashMap<String, String> {
     // 工具消息
     m.insert("tool_call".to_string(), "工具".to_string());
     m.insert("thinking".to_string(), "思考".to_string());
+    m.insert("tools_header".to_string(), "使用工具".to_string());
 
     // 错误消息
     m.insert("error".to_string(), "错误".to_string());
