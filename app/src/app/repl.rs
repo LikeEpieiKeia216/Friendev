@@ -1,7 +1,6 @@
 use super::command_handler;
 use super::reedline_config::{create_prompt, create_reedline, process_signal, InputResult};
 use super::startup::AppState;
-use super::terminal_ui::TerminalUI;
 use anyhow::Result;
 use ui::get_i18n;
 
@@ -11,9 +10,6 @@ pub async fn run_repl(mut state: AppState) -> Result<()> {
     let prompt = create_prompt();
 
     loop {
-        // Display hint before each input
-        let _ = TerminalUI::print_simple_hint();
-        
         let sig = line_editor.read_line(&prompt);
 
         match sig {

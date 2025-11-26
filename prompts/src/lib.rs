@@ -85,6 +85,13 @@ pub fn print_welcome(config: &Config, i18n: &I18n) {
         i18n.get("cmd_exit").dimmed()
     );
     println!("{}", "═".repeat(60).bright_black());
+    
+    // 快捷键提示
+    println!(
+        "\n  {} {}",
+        "💡".bright_yellow(),
+        i18n.get("hint_short").dimmed()
+    );
     println!();
 }
 
