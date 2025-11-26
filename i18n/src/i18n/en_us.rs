@@ -118,6 +118,14 @@ pub fn get_messages() -> HashMap<String, String> {
     m.insert("thinking".to_string(), "THINK".to_string());
     m.insert("tools_header".to_string(), "Using Tools".to_string());
 
+    // Hint messages
+    m.insert("hint_send".to_string(), "Send".to_string());
+    m.insert("hint_newline".to_string(), "New Line".to_string());
+    m.insert(
+        "hint_short".to_string(),
+        "Enter = Send  |  Alt+Enter = New Line".to_string(),
+    );
+
     // Error messages
     m.insert("error".to_string(), "Error".to_string());
     m.insert("api_error".to_string(), "API Error".to_string());

@@ -21,4 +21,4 @@ prompts = { path = "../prompts" }
 security = { path = "../security" }
 tools = { path = "../tools" }
 ui = { path = "../ui" }
-rustyline = "13"
+reedline = "0.28"

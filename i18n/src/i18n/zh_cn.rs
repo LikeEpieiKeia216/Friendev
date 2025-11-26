@@ -91,6 +91,14 @@ pub fn get_messages() -> HashMap<String, String> {
     m.insert("thinking".to_string(), "思考".to_string());
     m.insert("tools_header".to_string(), "使用工具".to_string());
 
+    // 提示消息
+    m.insert("hint_send".to_string(), "发送".to_string());
+    m.insert("hint_newline".to_string(), "换行".to_string());
+    m.insert(
+        "hint_short".to_string(),
+        "Enter 发送  |  Alt+Enter 换行".to_string(),
+    );
+
     // 错误消息
     m.insert("error".to_string(), "错误".to_string());
     m.insert("api_error".to_string(), "API 错误".to_string());
