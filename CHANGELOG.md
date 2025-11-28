@@ -1,6 +1,15 @@
 # Changelog
 - all friendev update changelog on here.
 ---
+## [0.2.3] - 2025-11-28
+
+### Fixed
+- **Multi-line input display issue**: Fixed overlapping/covered display when input area is filled with multi-line content
+  - Affects prompt optimization feature (using `!` prefix or Shift+Enter)
+  - Affects history navigation (using arrow keys to select multi-line history)
+  - Solution: Automatically creates vertical space when needed by detecting cursor position and terminal height
+
+---
 ## [0.2.2] - 2025-11-22
 - 加入了 network_get_content 工具，可以让AI通过URL获取到内容。
 

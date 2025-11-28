@@ -101,10 +101,40 @@ pub async fn run_repl(mut state: AppState) -> Result<()> {
 
 /// Pre-fill the input buffer with text
 fn prefill_input(line_editor: &mut Reedline, text: &str) -> Result<()> {
+    use crossterm::{terminal, cursor};
+    use std::io::{self, Write};
+    
+    // Count newlines in the text to estimate required space
+    let newline_count = text.matches('\n').count();
+    
+    // If multi-line content, ensure we have enough vertical space
+    if newline_count > 0 {
+        // Get terminal size
+        let (_, height) = terminal::size().unwrap_or((80, 24));
+        
+        // Get current cursor position (if possible)
+        if let Ok((_, current_y)) = cursor::position() {
+            // Calculate needed space (lines in text + minimal buffer)
+            // Only add 1 line buffer to avoid excessive whitespace
+            let needed_lines = (newline_count + 1) as u16;
+            let available_lines = height.saturating_sub(current_y).saturating_sub(1);
+            
+            // If not enough space, print minimal newlines to make room
+            if available_lines < needed_lines {
+                let extra_lines = needed_lines - available_lines;
+                for _ in 0..extra_lines {
+                    println!();
+                }
+                io::stdout().flush().ok();
+            }
+        }
+    }
+    
     // Use the run_edit_commands API to insert text
     line_editor.run_edit_commands(&[
         EditCommand::Clear,
         EditCommand::InsertString(text.to_string()),
     ]);
+    
     Ok(())
 }
