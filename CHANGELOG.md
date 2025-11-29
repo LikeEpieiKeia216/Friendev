@@ -1,13 +1,19 @@
 # Changelog
 - all friendev update changelog on here.
 ---
-## [0.2.2] - 2025-11-22
-- 加入了`!`，当在提示词前写`!`，如`!给我写一个排序算法`，则AI会自动优化提示词并填入
-- 加入了ESC快捷键，可以打断AI输出。
-- 更改了 Ctrl+C 的逻辑，需要连续两次按下 Ctrl+C 才会退出
-- 将输入更改为 reedline 以支持多行输入与更多的操作。
-- 增加了/model，可以可视化的切换模型
-- 为AI增加了`network_get_content`工具，现在AI可以通过URL获取网页内容。
+## [0.2.2] - 2025-11-30
+
+### New Features
+- **Prompt Optimization**: Added `!` prefix syntax to enable automatic prompt optimization.
+- **Model Management**: Introduced the `/model` command, providing a visual interface for model switching.
+- **Network Tool**: Integrated the `network_get_content` tool, allowing the AI to fetch web page content via URL.
+
+### User Experience Improvements
+- **Input System**: Replaced with the reedline library, supporting multi-line input and enhanced editing capabilities.
+- **Interruption Mechanism**: Added the ESC key shortcut to interrupt AI output; improved Ctrl+C exit logic (now requires two consecutive presses).
+
+### System Optimizations
+- **Approval Mechanism**: Refactored the "Approval Required".
 ---
 ## [0.2.1] - 2025-11-22
 - Roll back the codebase to the time before it was refactored into C/S (Only Client), as there are many issues
