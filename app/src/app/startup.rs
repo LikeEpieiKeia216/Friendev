@@ -18,8 +18,8 @@ pub struct AppState {
 
 /// Initialize the application
 pub async fn initialize_app() -> Result<AppState> {
-    // Check for --ally flag
-    let auto_approve = env::args().any(|arg| arg == "--ally");
+    // Check for --ally or --yolo flag
+    let auto_approve = env::args().any(|arg| arg == "--ally" || arg == "--yolo");
 
     // Check for --setup flag to force setup
     let force_setup = env::args().any(|arg| arg == "--setup");
